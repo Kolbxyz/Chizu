@@ -14,7 +14,16 @@ export interface Settings {
   apiKey: string;
   rememberKey: boolean;
   setApiKey: (key: string, remember: boolean) => void;
+  /** Mapillary client token for street-level imagery; empty when off. */
+  mapillaryToken: string;
+  rememberMapillary: boolean;
+  setMapillaryToken: (token: string, remember: boolean) => void;
   local: LocalStatus;
+  /** What the local server can offer Claude Code runs. */
+  capabilities: { code: boolean; browser: boolean };
+  /** The user allows the browser for new Claude Code analyses. */
+  browser: boolean;
+  setBrowser: (allowed: boolean) => void;
   /** Engines whose history is available on this host. */
   engines: Partial<Record<EngineId, Engine>>;
 }

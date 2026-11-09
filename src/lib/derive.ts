@@ -9,7 +9,7 @@ export interface TimedEstimate {
 
 export type ActivityEvent = Extract<
   JobEvent,
-  { kind: "search" | "fetch" | "zoom" | "thought" | "hint" | "status" }
+  { kind: "search" | "fetch" | "zoom" | "tool" | "code" | "task" | "thought" | "hint" | "status" }
 >;
 
 export interface JobView {

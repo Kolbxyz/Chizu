@@ -66,7 +66,11 @@ export function App() {
     try {
       const groups = together ? [files] : files.map((file) => [file]);
       const created = [];
-      for (const group of groups) created.push(await engine.create(group, locale));
+      const options = {
+        mapillaryToken: settings.mapillaryToken || undefined,
+        browser: engine.id === "cc" && settings.browser,
+      };
+      for (const group of groups) created.push(await engine.create(group, locale, options));
       if (created[0]) select(toRef(engine.id, created[0].id));
     } catch (err) {
       if (err instanceof MissingApiKeyError) openSettings(t("settings.needKey"));

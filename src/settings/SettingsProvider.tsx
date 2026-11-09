@@ -12,6 +12,8 @@ const browserEngine = createBrowserEngine(() => apiConfig);
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [local, setLocal] = useState<LocalStatus>("checking");
+  const [capabilities, setCapabilities] = useState({ code: false, browser: false });
+  const [browser, setBrowserState] = useState(() => readSetting("browser") === "1");
   const [chosen, setChosen] = useState<EngineId>(() =>
     readSetting("engine") === "api" ? "api" : "cc",
   );
@@ -22,11 +24,16 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const savedKey = readSetting("apiKey");
   const [apiKey, setKey] = useState(savedKey ?? "");
   const [rememberKey, setRemember] = useState(savedKey !== null);
+  const savedToken = readSetting("mapillaryToken");
+  const [mapillaryToken, setToken] = useState(savedToken ?? "");
+  const [rememberMapillary, setRememberToken] = useState(savedToken !== null);
 
   useEffect(() => {
     let active = true;
     void probeServer().then((health) => {
-      if (active) setLocal(!health ? "absent" : health.claudeCode ? "ready" : "no-cli");
+      if (!active) return;
+      setLocal(!health ? "absent" : health.claudeCode ? "ready" : "no-cli");
+      if (health) setCapabilities({ code: health.code, browser: health.browser });
     });
     return () => {
       active = false;
@@ -55,6 +62,19 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     else clearSetting("apiKey");
   }, []);
 
+  const setMapillaryToken = useCallback((token: string, remember: boolean) => {
+    const trimmed = token.trim();
+    setToken(trimmed);
+    setRememberToken(remember);
+    if (remember && trimmed) writeSetting("mapillaryToken", trimmed);
+    else clearSetting("mapillaryToken");
+  }, []);
+
+  const setBrowser = useCallback((allowed: boolean) => {
+    setBrowserState(allowed);
+    writeSetting("browser", allowed ? "1" : "0");
+  }, []);
+
   const value = useMemo(() => {
     // Claude Code is only selectable where the local server found the CLI.
     const engine: EngineId = local === "ready" ? chosen : "api";
@@ -62,8 +82,15 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       local === "absent" || local === "checking"
         ? { api: browserEngine }
         : { cc: serverEngine, api: browserEngine };
-    return { engine, setEngine, model, setModel, apiKey, rememberKey, setApiKey, local, engines };
-  }, [local, chosen, setEngine, model, setModel, apiKey, rememberKey, setApiKey]);
+    return {
+      engine, setEngine, model, setModel, apiKey, rememberKey, setApiKey,
+      mapillaryToken, rememberMapillary, setMapillaryToken, local, engines,
+      capabilities, browser, setBrowser,
+    }; // prettier-ignore
+  }, [
+    local, chosen, setEngine, model, setModel, apiKey, rememberKey, setApiKey,
+    mapillaryToken, rememberMapillary, setMapillaryToken, capabilities, browser, setBrowser,
+  ]); // prettier-ignore
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
 }

@@ -73,14 +73,18 @@ No. There is no analytics, no crash reporting and no third-party font or script.
 
 - **Live narrowing**: Every estimate (centre, radius, confidence) is animated on the map, with several hypotheses side by side while the evidence is ambiguous.
 - **Metadata first**: EXIF GPS position, heading, date and camera are extracted and shown; the GPS position gets its own pin with a heading cone.
-- **Visual zoom**: Claude crops the full-resolution original to read signs, plates and shopfronts.
+- **Visual zoom**: Claude crops the full-resolution original to read signs, plates and shopfronts, with optional contrast enhancement for haze and distant landmarks.
+- **Visual verification**: Claude looks at candidates instead of reading about them: Wikimedia Commons photos near a place, satellite imagery, Mapillary street-level photos (optional, with your own token), and any image it finds on the web.
+- **Sandboxed code** (Claude Code): Claude runs Python to measure bearings, sun position, perspective and image filters, in Claude Code's sandbox with access to the photos only.
+- **Google Maps and Street View** (Claude Code, opt-in): a browser window lets Claude stand at a candidate viewpoint in Street View and compare it with the photo.
+- **Map data and terrain**: OpenStreetMap feature searches (every church or tower around a point) and skyline profiles computed from elevation data to test a viewpoint against visible hills.
 - **Verified coordinates**: Web searches, pages read and Nominatim lookups confirm a place before it is pinned.
 - **Several photos**: Analysed separately, or together when they show the same place.
 
 ### Following along
 
 - **Clues**: Each observation appears as a categorised clue in the inspector.
-- **Investigation log**: Searches, pages read and zooms, listed as they happen.
+- **Investigation log**: Searches, pages read, zooms, photos viewed and map lookups, listed as they happen.
 - **Replay**: A timeline scrubber replays how the location narrowed down.
 - **Hints**: Send a hint during or after an analysis; the session resumes with it.
 - **History**: Past analyses persist and survive restarts.
@@ -96,7 +100,7 @@ No. There is no analytics, no crash reporting and no third-party font or script.
 ## Privacy & Security Discipline
 
 1. **Loopback Only**: The API binds to `127.0.0.1` and checks the `Host` header on every request and an `x-chizu` header on every write (see [`SECURITY.md`](SECURITY.md)).
-2. **Strict CSP**: No inline scripts, no third-party origins beyond the Anthropic API and Nominatim.
+2. **Strict CSP**: No inline scripts, no third-party origins beyond the Anthropic API and the research services listed in [`docs/decisions/0003-research-tools.md`](docs/decisions/0003-research-tools.md).
 3. **Zero Telemetry**: No analytics, no error reporting service, no remote fonts.
 4. **No Secrets on Disk by Default**: The API key stays in memory unless you choose to remember it.
 5. **Places, Not People**: The system prompt tells Claude to locate places and never identify people.

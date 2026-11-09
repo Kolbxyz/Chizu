@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState } from "react";
-import { Eye, EyeOff, X } from "lucide-react";
+import { X } from "lucide-react";
 import { MODELS } from "../engines/browser/pricing.ts";
 import type { EngineId } from "../engines/types.ts";
 import { useI18n } from "../i18n/context.ts";
 import type { MessageKey } from "../i18n/en.ts";
 import { useSettings } from "./context.ts";
+import { LocalTools } from "./LocalTools.tsx";
+import { SecretField } from "./SecretField.tsx";
 import "./SettingsDialog.css";
 
 const KEYS_URL = "https://console.anthropic.com/settings/keys";
+const MAPILLARY_URL = "https://www.mapillary.com/dashboard/developers";
 const LOCAL_REASON: Record<string, MessageKey> = {
   checking: "settings.cc.checking",
   "no-cli": "settings.cc.noCli",
@@ -27,7 +30,8 @@ export function SettingsDialog({ open, notice, onClose }: Props) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [key, setKey] = useState(settings.apiKey);
   const [remember, setRemember] = useState(settings.rememberKey);
-  const [reveal, setReveal] = useState(false);
+  const [token, setToken] = useState(settings.mapillaryToken);
+  const [rememberToken, setRememberToken] = useState(settings.rememberMapillary);
 
   useEffect(() => {
     if (open) dialog.current?.showModal();
@@ -36,6 +40,7 @@ export function SettingsDialog({ open, notice, onClose }: Props) {
 
   const close = () => {
     settings.setApiKey(key, remember);
+    settings.setMapillaryToken(token, rememberToken);
     onClose();
   };
   const engines: Array<{ id: EngineId; disabled: boolean; reason?: MessageKey }> = [
@@ -81,48 +86,29 @@ export function SettingsDialog({ open, notice, onClose }: Props) {
             />
             <span>
               <strong>{t(`settings.${id}.name`)}</strong>
-              <small>{disabled && reason ? t(reason) : t(`settings.${id}.body`)}</small>
+              {disabled && reason && <small>{t(reason)}</small>}
             </span>
           </label>
         ))}
       </fieldset>
 
+      <LocalTools />
+
       <fieldset className="settings__group">
         <legend>{t("settings.api")}</legend>
-        <label className="settings__field">
-          <span>{t("settings.key")}</span>
-          <span className="settings__key">
-            <input
-              type={reveal ? "text" : "password"}
-              value={key}
-              autoComplete="off"
-              spellCheck={false}
-              placeholder="sk-ant-…"
-              onChange={(e) => setKey(e.target.value)}
-            />
-            <button
-              type="button"
-              aria-label={t(reveal ? "settings.hideKey" : "settings.showKey")}
-              onClick={() => setReveal(!reveal)}
-            >
-              {reveal ? <EyeOff size={16} aria-hidden /> : <Eye size={16} aria-hidden />}
-            </button>
-          </span>
-        </label>
-        <label className="settings__check">
-          <input
-            type="checkbox"
-            checked={remember}
-            onChange={(e) => setRemember(e.target.checked)}
-          />
-          <span>{t("settings.remember")}</span>
-        </label>
-        <p className="settings__hint">
-          {t("settings.keyPrivacy")}{" "}
-          <a href={KEYS_URL} target="_blank" rel="noopener noreferrer">
-            {t("settings.getKey")}
-          </a>
-        </p>
+        <SecretField
+          label={t("settings.key")}
+          value={key}
+          placeholder="sk-ant-…"
+          onChange={setKey}
+          remember={remember}
+          onRemember={setRemember}
+          hint={
+            <a href={KEYS_URL} target="_blank" rel="noopener noreferrer">
+              {t("settings.getKey")}
+            </a>
+          }
+        />
         <label className="settings__field">
           <span>{t("settings.model")}</span>
           <select
@@ -136,6 +122,23 @@ export function SettingsDialog({ open, notice, onClose }: Props) {
             ))}
           </select>
         </label>
+      </fieldset>
+
+      <fieldset className="settings__group">
+        <legend>{t("settings.street")}</legend>
+        <SecretField
+          label={t("settings.street.token")}
+          value={token}
+          placeholder="MLY|…"
+          onChange={setToken}
+          remember={rememberToken}
+          onRemember={setRememberToken}
+          hint={
+            <a href={MAPILLARY_URL} target="_blank" rel="noopener noreferrer">
+              {t("settings.street.getToken")}
+            </a>
+          }
+        />
       </fieldset>
 
       <footer className="settings__foot">

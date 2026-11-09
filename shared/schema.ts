@@ -77,8 +77,22 @@ export const clueShape = {
 
 export const clueSchema = z.object(clueShape);
 
+const fraction = z.number().min(0).max(1);
+
+/** zoom_image input; the photo number is checked against the job's photo count. */
+export const zoomShape = {
+  image: z.number().int().min(1).describe("1-based photo number."),
+  x: fraction,
+  y: fraction,
+  width: fraction.min(0.01),
+  height: fraction.min(0.01),
+  enhance: z.boolean().optional().describe("Stretch the contrast of hazy or distant details."),
+};
+export const zoomSchema = z.object(zoomShape);
+
 export type Candidate = z.infer<typeof candidateSchema>;
 export type Estimate = z.infer<typeof estimateSchema>;
 export type Clue = z.infer<typeof clueSchema>;
+export type ZoomRequest = z.infer<typeof zoomSchema>;
 export type PrecisionLevel = (typeof PRECISION_LEVELS)[number];
 export type ClueCategory = (typeof CLUE_CATEGORIES)[number];

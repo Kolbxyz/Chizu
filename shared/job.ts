@@ -1,4 +1,6 @@
 // Wire types shared by the API server and the frontend.
+import type { BrowserToolName } from "./browser.ts";
+import type { ResearchToolName } from "./research/types.ts";
 import type { Clue, Estimate } from "./schema.ts";
 
 export type JobStatus = "queued" | "running" | "done" | "error" | "cancelled";
@@ -35,6 +37,12 @@ export type JobEvent = EventBase &
     | { kind: "search"; query: string }
     | { kind: "fetch"; url: string }
     | { kind: "zoom"; image: number }
+    /** A research tool call; `detail` is data (a query, coordinates, a host). */
+    | { kind: "tool"; tool: ResearchToolName | BrowserToolName; detail: string }
+    /** A sandboxed command; `detail` is Claude's description of it or its first line. */
+    | { kind: "code"; detail: string }
+    /** A step Claude added to its plan for the run. */
+    | { kind: "task"; detail: string }
     | { kind: "thought"; text: string }
     | { kind: "hint"; text: string }
     | { kind: "usage"; costUsd: number; turns: number; durationMs: number }

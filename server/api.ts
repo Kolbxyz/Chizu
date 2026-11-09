@@ -4,7 +4,9 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { Readable } from "node:stream";
 import { claudeCodeAvailable } from "./claude.ts";
 import { ImageRejected } from "./images.ts";
-import type { JobStore, UploadedImage } from "./jobs.ts";
+import { browserAvailable } from "./browser/available.ts";
+import type { JobOptions, JobStore, UploadedImage } from "./jobs.ts";
+import { sandboxAvailable } from "./sandbox.ts";
 
 const MAX_IMAGES = 12;
 const MAX_IMAGE_BYTES = 40 * 1024 * 1024;
@@ -12,6 +14,8 @@ const MAX_UPLOAD_BYTES = 200 * 1024 * 1024;
 const MAX_HINT_CHARS = 2000;
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
 const LOCALE_PATTERN = /^[a-zA-Z]{2,3}(-[a-zA-Z0-9]{2,8})*$/;
+/** Mapillary client tokens look like "MLY|<app id>|<secret>". */
+const TOKEN_PATTERN = /^[\w|-]{10,200}$/;
 
 class HttpError extends Error {
   readonly status: number;
@@ -41,7 +45,12 @@ async function route(store: JobStore, req: IncomingMessage, res: ServerResponse,
   const parts = url.pathname.split("/").filter(Boolean).slice(1); // drop "api"
   const [resource, id, action, arg] = parts;
   if (resource === "health" && req.method === "GET") {
-    return json(res, 200, { claudeCode: await claudeCodeAvailable() });
+    const [claudeCode, code, browser] = await Promise.all([
+      claudeCodeAvailable(),
+      sandboxAvailable(),
+      browserAvailable(),
+    ]);
+    return json(res, 200, { claudeCode, code, browser });
   }
   if (resource !== "jobs") throw new HttpError(404, "not found");
   const method = req.method ?? "GET";
@@ -49,8 +58,8 @@ async function route(store: JobStore, req: IncomingMessage, res: ServerResponse,
   if (!id) {
     if (method === "GET") return json(res, 200, store.list());
     if (method === "POST") {
-      const { uploads, locale } = await readUpload(req);
-      return json(res, 201, await store.create(uploads, locale));
+      const { uploads, locale, options } = await readUpload(req);
+      return json(res, 201, await store.create(uploads, locale, options));
     }
     throw new HttpError(405, "method not allowed");
   }
@@ -113,7 +122,7 @@ function streamEvents(store: JobStore, id: string, req: IncomingMessage, res: Se
 
 async function readUpload(
   req: IncomingMessage,
-): Promise<{ uploads: UploadedImage[]; locale: string }> {
+): Promise<{ uploads: UploadedImage[]; locale: string; options: JobOptions }> {
   const length = Number(req.headers["content-length"]);
   if (!Number.isFinite(length) || length > MAX_UPLOAD_BYTES)
     throw new HttpError(413, "upload too large");
@@ -138,7 +147,14 @@ async function readUpload(
     });
   }
   const locale = String(form.get("locale") ?? "en");
-  return { uploads, locale: LOCALE_PATTERN.test(locale) ? locale : "en" };
+  const token = form.get("mapillaryToken");
+  if (token !== null && (typeof token !== "string" || !TOKEN_PATTERN.test(token)))
+    throw new HttpError(400, "invalid Mapillary token");
+  return {
+    uploads,
+    locale: LOCALE_PATTERN.test(locale) ? locale : "en",
+    options: { mapillaryToken: token ?? undefined, browser: form.get("browser") === "1" },
+  };
 }
 
 async function readJson(req: IncomingMessage): Promise<unknown> {
