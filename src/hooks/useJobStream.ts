@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Job, JobEvent } from "../../shared/job.ts";
-import { api } from "../lib/api.ts";
+import { api } from "../engines/server.ts";
 import { applyEvent } from "../lib/derive.ts";
 
 /** Live job state over Server-Sent Events: a snapshot, then every new event. */

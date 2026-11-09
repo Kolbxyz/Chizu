@@ -5,7 +5,7 @@ import { join } from "node:path";
 import type { Job, JobEvent, JobSummary } from "../shared/job.ts";
 import { startRun, type MessageContent, type Run } from "./claude.ts";
 import { ingestImage, viewPath } from "./images.ts";
-import { hintMessage, initialMessage } from "./prompt.ts";
+import { hintMessage, initialMessage } from "../shared/prompt.ts";
 
 const MAX_RUNNING = Math.max(1, Number(process.env.CHIZU_CONCURRENCY) || 2);
 
