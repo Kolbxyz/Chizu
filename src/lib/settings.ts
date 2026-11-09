@@ -1,6 +1,7 @@
 // Per-browser preferences (theme, language, map layer). Storage can be
 // unavailable in private windows; defaults apply then.
-type Key = "theme" | "locale" | "layer" | "engine" | "model" | "apiKey";
+type Key =
+  "theme" | "locale" | "layer" | "engine" | "model" | "apiKey" | "mapillaryToken" | "browser";
 
 export function readSetting(key: Key): string | null {
   try {

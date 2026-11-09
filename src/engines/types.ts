@@ -4,10 +4,18 @@ import type { Job, JobEvent, JobSummary } from "../../shared/job.ts";
 
 export type EngineId = "cc" | "api";
 
+/** Per-analysis settings, held in memory for the analysis and its resumes. */
+export interface AnalysisOptions {
+  /** The user's Mapillary client token; street-level imagery is off without it. */
+  mapillaryToken?: string;
+  /** Allow the browser (Claude Code engine only). */
+  browser?: boolean;
+}
+
 export interface Engine {
   id: EngineId;
   list(): Promise<JobSummary[]>;
-  create(files: File[], locale: string): Promise<Job>;
+  create(files: File[], locale: string, options: AnalysisOptions): Promise<Job>;
   /** Sends the current job, then every new event. Returns the unsubscribe function. */
   watch(id: string, onSnapshot: (job: Job) => void, onEvent: (event: JobEvent) => void): () => void;
   hint(id: string, text: string): Promise<void>;

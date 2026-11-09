@@ -17,6 +17,10 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
 
 export interface ServerHealth {
   claudeCode: boolean;
+  /** Sandboxed code execution is available (Claude Code's sandbox can run). */
+  code: boolean;
+  /** The browser's Chromium is installed. */
+  browser: boolean;
 }
 
 /** Resolves when the local server answers; GitHub Pages has none. */
@@ -35,10 +39,12 @@ export const serverEngine: Engine = {
   id: "cc",
   list: () => call<JobSummary[]>("/jobs"),
 
-  create(files, locale) {
+  create(files, locale, options) {
     const form = new FormData();
     for (const file of files) form.append("images", file);
     form.append("locale", locale);
+    if (options.mapillaryToken) form.append("mapillaryToken", options.mapillaryToken);
+    if (options.browser) form.append("browser", "1");
     return call<Job>("/jobs", { method: "POST", headers: WRITE_HEADERS, body: form });
   },
 

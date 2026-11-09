@@ -22,7 +22,9 @@ Shared engineering rules: https://github.com/Kolbxyz/bootstrap/tree/main/rules. 
 
 - `shared/` — schemas and wire types shared by the server and the page.
 - `server/` — Node HTTP API (`api.ts`), job store and queue (`jobs.ts`), Claude CLI runner (`claude.ts`), system prompt (`prompt.ts`), image ingestion (`images.ts`).
-- `server/mcp/reporter.ts` — stdio MCP server started by the CLI for each run: `report_clue`, `report_estimate`, `zoom_image`.
+- `server/mcp/reporter.ts` — stdio MCP server started by the CLI for each run: `report_clue`, `report_estimate`, `zoom_image`, and the research tools (`server/mcp/research.ts`).
+- `server/sandbox.ts`, `server/cliInvocation.ts` — sandboxed `Bash` for runs (Claude Code's sandbox) and the CLI command line; `server/browser/` — opt-in Chromium (a visible window when a display exists, headless otherwise) and its address-filtering proxy; `docs/decisions/0004-code-and-browser.md`.
+- `shared/research/` — research tools shared by both engines (geocode, OpenStreetMap features, Commons photos, image fetch, satellite, street level, horizon) and the per-run `ResearchSession` (validation, repeat cache, budgets); `docs/decisions/0003-research-tools.md`.
 - `src/engines/` — where analyses run, behind the `Engine` interface: `server.ts` (Claude Code through the local server) and `browser/` (Anthropic API from the browser, IndexedDB history; `docs/decisions/0002-browser-api-engine.md`).
 - `src/settings/` — engine choice, API key and model; detects the local server through `GET /api/health`.
 - `src/` — React page: `features/map` (Leaflet), `features/job` (inspector), `features/upload`, `features/history`.

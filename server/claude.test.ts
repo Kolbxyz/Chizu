@@ -42,7 +42,37 @@ describe("blockToEvent", () => {
 
   it("ignores unknown tools", () => {
     expect(
-      blockToEvent({ type: "tool_use", name: "Bash", input: { command: "ls" } }),
+      blockToEvent({ type: "tool_use", name: "Write", input: { file_path: "x" } }),
     ).toBeUndefined();
+  });
+
+  it("maps research tool calls to tool events", () => {
+    expect(
+      blockToEvent({
+        type: "tool_use",
+        name: "mcp__chizu__find_photos",
+        input: { query: "Endingen Kirche" },
+      }),
+    ).toEqual({ kind: "tool", tool: "find_photos", detail: "Endingen Kirche" });
+    expect(
+      blockToEvent({ type: "tool_use", name: "mcp__other__find_photos", input: { query: "x" } }),
+    ).toBeUndefined();
+  });
+
+  it("maps sandboxed commands and browser calls", () => {
+    expect(
+      blockToEvent({
+        type: "tool_use",
+        name: "Bash",
+        input: { command: "python3 sun.py", description: "Compute sun azimuth" },
+      }),
+    ).toEqual({ kind: "code", detail: "Compute sun azimuth" });
+    expect(
+      blockToEvent({
+        type: "tool_use",
+        name: "mcp__chizu__street_view",
+        input: { lat: 48.3, lng: 7.4, heading: 90 },
+      }),
+    ).toEqual({ kind: "tool", tool: "street_view", detail: "48.30000, 7.40000 · 90°" });
   });
 });

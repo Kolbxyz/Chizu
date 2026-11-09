@@ -8,8 +8,9 @@ import Anthropic, {
 } from "@anthropic-ai/sdk";
 import type { Job, JobEvent, JobSummary } from "../../../shared/job.ts";
 import { initialMessage } from "../../../shared/prompt.ts";
+import { ResearchSession } from "../../../shared/research/session.ts";
 import { applyEvent } from "../../lib/derive.ts";
-import type { Engine } from "../types.ts";
+import type { AnalysisOptions, Engine } from "../types.ts";
 import { idb } from "./db.ts";
 import { ingestImage } from "./images.ts";
 import type { ApiModel } from "./pricing.ts";
@@ -39,6 +40,8 @@ export function createBrowserEngine(config: () => ApiConfig): Engine {
   const listeners = new Map<string, Set<(event: JobEvent) => void>>();
   const runs = new Map<string, Run>();
   const urls = new Map<string, string>();
+  /** Per-job settings, in memory only: a resume after a reload runs without them. */
+  const options = new Map<string, AnalysisOptions>();
 
   const loaded = idb.all<Job>("jobs").then(async (stored) => {
     for (const job of stored) {
@@ -90,6 +93,11 @@ export function createBrowserEngine(config: () => ApiConfig): Engine {
         model,
         messages,
         imageCount: job.imageCount,
+        research: new ResearchSession({
+          signal: run.controller.signal,
+          headers: {},
+          mapillaryToken: options.get(job.id)?.mapillaryToken,
+        }),
         original: async (index) => {
           const blob = await idb.get<Blob>("blobs", `${job.id}/${index}/orig`);
           if (!blob) throw new Error("photo missing");
@@ -126,10 +134,11 @@ export function createBrowserEngine(config: () => ApiConfig): Engine {
       }));
     },
 
-    async create(files, locale) {
+    async create(files, locale, analysis) {
       client(); // Fail before storing anything when no key is set.
       await loaded;
       const id = crypto.randomUUID();
+      options.set(id, analysis);
       const ingested = await Promise.all(files.map(ingestImage));
       for (const [i, file] of files.entries()) {
         await idb.put("blobs", `${id}/${i}/orig`, file);
@@ -197,6 +206,7 @@ export function createBrowserEngine(config: () => ApiConfig): Engine {
     async remove(id) {
       runs.get(id)?.controller.abort();
       jobs.delete(id);
+      options.delete(id);
       listeners.delete(id);
       for (const [key, url] of urls) {
         if (key.startsWith(`${id}/`)) {

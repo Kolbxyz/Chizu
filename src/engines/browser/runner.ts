@@ -1,13 +1,19 @@
 // Agent loop of the API engine: calls the Messages API from the browser, runs
 // the reporting tools locally and turns every step into job events.
-import Anthropic from "@anthropic-ai/sdk";
+import Anthropic, { BadRequestError } from "@anthropic-ai/sdk";
 import { z } from "zod";
 import type { JobEvent } from "../../../shared/job.ts";
 import { API_TOOLS, systemPrompt } from "../../../shared/prompt.ts";
-import { clueSchema, estimateSchema } from "../../../shared/schema.ts";
+import {
+  RESEARCH_TOOLS,
+  describeCall,
+  isResearchTool,
+  type ResearchSession,
+} from "../../../shared/research/session.ts";
+import { clueSchema, estimateSchema, zoomSchema } from "../../../shared/schema.ts";
 import { CLUE_REPLY, TOOL_DESCRIPTIONS, estimateReply } from "../../../shared/tools.ts";
-import { geocode, nominatimUrl } from "./geocode.ts";
 import { cropImage } from "./images.ts";
+import { dropUrlImages, toToolContent } from "./urlImages.ts";
 import { emptyUsage, estimateCost, type ApiModel } from "./pricing.ts";
 
 type MessageParam = Anthropic.Beta.BetaMessageParam;
@@ -16,15 +22,6 @@ type EventBody = JobEvent extends infer E ? (E extends JobEvent ? Omit<E, "t"> :
 
 const MAX_TURNS = 40;
 const BETAS = ["server-side-fallback-2026-07-01", "thinking-display-updates-2026-08-18"];
-
-const zoomSchema = z.object({
-  image: z.number().int().min(1),
-  x: z.number().min(0).max(1),
-  y: z.number().min(0).max(1),
-  width: z.number().min(0.01).max(1),
-  height: z.number().min(0.01).max(1),
-});
-const geocodeSchema = z.object({ query: z.string().min(1).max(300) });
 
 const jsonSchema = (schema: z.ZodType) => {
   const { $schema: _ignored, ...rest } = z.toJSONSchema(schema) as Record<string, unknown>;
@@ -48,12 +45,11 @@ function tools(imageCount: number): Anthropic.Beta.BetaToolUnion[] {
       description: `${TOOL_DESCRIPTIONS.zoom} Photos are numbered 1 to ${imageCount}.`,
       input_schema: jsonSchema(zoomSchema),
     },
-    {
-      name: "geocode",
-      description:
-        "Look up a place, street, landmark or business on OpenStreetMap and return its exact coordinates.",
-      input_schema: jsonSchema(geocodeSchema),
-    },
+    ...RESEARCH_TOOLS.map((tool) => ({
+      name: tool.name,
+      description: tool.description,
+      input_schema: jsonSchema(tool.schema),
+    })),
     { type: "web_search_20260209", name: "web_search", max_uses: 10 },
     { type: "web_fetch_20260209", name: "web_fetch", max_uses: 15 },
   ];
@@ -65,6 +61,7 @@ export interface RunContext {
   messages: MessageParam[];
   imageCount: number;
   original: (index: number) => Promise<Blob>;
+  research: ResearchSession;
   emit: (event: EventBody) => void;
   /** Persists the conversation after each turn, so a later hint can resume it. */
   save: (messages: MessageParam[]) => Promise<void>;
@@ -80,23 +77,7 @@ export async function runConversation(ctx: RunContext): Promise<void> {
   try {
     for (; turns < MAX_TURNS; turns += 1) {
       appendHints(ctx);
-      const message = await ctx.client.beta.messages
-        .stream(
-          {
-            model: ctx.model,
-            max_tokens: 32000,
-            betas: BETAS,
-            fallbacks: "default",
-            thinking: { type: "adaptive", display: "updates" },
-            output_config: { effort: "high" },
-            cache_control: { type: "ephemeral" },
-            system: systemPrompt(API_TOOLS),
-            tools: tools(ctx.imageCount),
-            messages: ctx.messages,
-          },
-          { signal: ctx.signal },
-        )
-        .finalMessage();
+      const message = await requestTurn(ctx);
       usage.input += message.usage.input_tokens;
       usage.output += message.usage.output_tokens;
       usage.cacheWrite += message.usage.cache_creation_input_tokens ?? 0;
@@ -121,6 +102,38 @@ export async function runConversation(ctx: RunContext): Promise<void> {
       turns: turns + 1,
       durationMs: Math.round(performance.now() - started),
     });
+  }
+}
+
+/**
+ * Research images are sent as URLs that the API downloads. When one cannot be
+ * fetched the API rejects the whole request; the images are then replaced by a
+ * note and the turn is sent again.
+ */
+async function requestTurn(ctx: RunContext) {
+  const send = () =>
+    ctx.client.beta.messages
+      .stream(
+        {
+          model: ctx.model,
+          max_tokens: 32000,
+          betas: BETAS,
+          fallbacks: "default",
+          thinking: { type: "adaptive", display: "updates" },
+          output_config: { effort: "high" },
+          cache_control: { type: "ephemeral" },
+          system: systemPrompt(API_TOOLS),
+          tools: tools(ctx.imageCount),
+          messages: ctx.messages,
+        },
+        { signal: ctx.signal },
+      )
+      .finalMessage();
+  try {
+    return await send();
+  } catch (err) {
+    if (!(err instanceof BadRequestError) || !dropUrlImages(ctx.messages)) throw err;
+    return send();
   }
 }
 
@@ -192,18 +205,12 @@ async function runTool(
       const data = await cropImage(await ctx.original(image - 1), crop);
       return reply([{ type: "image", source: { type: "base64", media_type: "image/jpeg", data } }]);
     }
-    case "geocode": {
-      const parsed = geocodeSchema.safeParse(block.input);
-      if (!parsed.success) return invalid(parsed.error);
-      ctx.emit({ kind: "fetch", url: nominatimUrl(parsed.data.query) });
-      try {
-        return reply(await geocode(parsed.data.query, ctx.signal));
-      } catch (err) {
-        if (ctx.signal.aborted) throw err;
-        return reply(`Lookup failed: ${err instanceof Error ? err.message : String(err)}`, true);
-      }
+    default: {
+      if (!isResearchTool(block.name)) return reply(`Unknown tool ${block.name}.`, true);
+      const detail = describeCall(block.name, block.input);
+      if (detail !== undefined) ctx.emit({ kind: "tool", tool: block.name, detail });
+      const outcome = await ctx.research.call(block.name, block.input);
+      return reply(toToolContent(outcome.parts), outcome.isError);
     }
-    default:
-      return reply(`Unknown tool ${block.name}.`, true);
   }
 }

@@ -1,16 +1,25 @@
 // Job store: persistence under data/, a bounded run queue and live subscribers.
 import { randomUUID } from "node:crypto";
-import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { existsSync } from "node:fs";
+import { copyFile, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { extname, join } from "node:path";
 import type { Job, JobEvent, JobSummary } from "../shared/job.ts";
 import { startRun, type MessageContent, type Run } from "./claude.ts";
-import { ingestImage, viewPath } from "./images.ts";
+import { browserAvailable } from "./browser/available.ts";
+import { ingestImage, originalPath, viewPath } from "./images.ts";
+import { sandboxAvailable } from "./sandbox.ts";
 import { hintMessage, initialMessage } from "../shared/prompt.ts";
 
 const MAX_RUNNING = Math.max(1, Number(process.env.CHIZU_CONCURRENCY) || 2);
 
 type Listener = (event: JobEvent) => void;
 type EventBody = Parameters<Parameters<typeof startRun>[1]["onEvent"]>[0];
+
+export interface JobOptions {
+  mapillaryToken?: string;
+  /** The user allowed the browser for this analysis. */
+  browser?: boolean;
+}
 
 export interface UploadedImage {
   name: string;
@@ -23,13 +32,18 @@ export class JobStore {
   private readonly runs = new Map<string, Run>();
   /** Jobs holding a run slot, including those still preparing their first message. */
   private readonly active = new Set<string>();
+  /** Per-job secrets, kept in memory only: a resume after a restart runs without them. */
+  private readonly options = new Map<string, JobOptions>();
   /** Hints received while a job waits in the queue. */
   private readonly queuedHints = new Map<string, string[]>();
   private readonly queue: string[] = [];
   private readonly jobsDir: string;
   private readonly workDir: string;
+  private readonly dataDir: string;
 
+  /** `dataDir` must be absolute: the sandbox rules name its paths. */
   constructor(dataDir: string) {
+    this.dataDir = dataDir;
     this.jobsDir = join(dataDir, "jobs");
     this.workDir = join(dataDir, "work");
   }
@@ -71,7 +85,7 @@ export class JobStore {
     return viewPath(this.dir(id), index);
   }
 
-  async create(uploads: UploadedImage[], locale: string): Promise<Job> {
+  async create(uploads: UploadedImage[], locale: string, options: JobOptions = {}): Promise<Job> {
     const id = randomUUID();
     const dir = this.dir(id);
     await mkdir(dir, { recursive: true });
@@ -85,6 +99,7 @@ export class JobStore {
         images, locale, events: [],
       }; // prettier-ignore
       this.jobs.set(id, job);
+      this.options.set(id, options);
       this.push(job, { kind: "status", status: "queued" });
       this.enqueue(id);
       return job;
@@ -135,8 +150,10 @@ export class JobStore {
     if (!this.jobs.has(id)) return false;
     this.cancel(id);
     this.jobs.delete(id);
+    this.options.delete(id);
     this.listeners.delete(id);
     await rm(this.dir(id), { recursive: true, force: true });
+    await rm(join(this.workDir, id), { recursive: true, force: true });
     return true;
   }
 
@@ -176,12 +193,19 @@ export class JobStore {
       this.drain();
       return;
     }
+    const options = this.options.get(job.id) ?? {};
+    const { cwd, code } = await this.workspace(job);
+    const browser = options.browser === true && (await browserAvailable());
     this.push(job, { kind: "status", status: "running" });
     const run = startRun(first, {
       jobDir: this.dir(job.id),
       imageCount: job.imageCount,
-      cwd: this.workDir,
+      cwd,
+      dataDir: this.dataDir,
+      code,
+      browser,
       resume,
+      mapillaryToken: options.mapillaryToken,
       onEvent: (event) => this.push(job, event),
       onSession: (sessionId) => {
         job.sessionId = sessionId;
@@ -201,6 +225,25 @@ export class JobStore {
       },
     });
     this.runs.set(job.id, run);
+  }
+
+  /**
+   * The run's working directory: one per job, holding full-resolution copies of
+   * the photos for sandboxed code. Jobs whose session began in the shared
+   * directory (before per-job directories) resume there, without code.
+   */
+  private async workspace(job: Job): Promise<{ cwd: string; code: boolean }> {
+    const cwd = join(this.workDir, job.id);
+    if (job.sessionId && !existsSync(cwd)) return { cwd: this.workDir, code: false };
+    await mkdir(cwd, { recursive: true });
+    for (const [i, image] of job.images.entries()) {
+      const ext = /^\.[a-z0-9]{2,5}$/i.test(extname(image.name))
+        ? extname(image.name).toLowerCase()
+        : ".jpg";
+      const target = join(cwd, `photo-${i + 1}${ext}`);
+      if (!existsSync(target)) await copyFile(originalPath(this.dir(job.id), i), target);
+    }
+    return { cwd, code: await sandboxAvailable() };
   }
 
   private async initialContent(job: Job, hints: string[]): Promise<MessageContent> {

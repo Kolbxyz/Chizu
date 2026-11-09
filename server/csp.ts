@@ -1,10 +1,19 @@
 // Content Security Policy, served as a header by the production server and as a
 // <meta> tag in static builds (vite.config.ts). Third-party origins: map tiles,
-// and the Anthropic API and Nominatim for the API engine.
+// and for the API engine the Anthropic API and the research services
+// (docs/decisions/0003-research-tools.md). Research images are downloaded by the
+// API, not by the page, so img-src does not list their hosts.
 export const TILE_ORIGINS = ["https://server.arcgisonline.com", "https://*.basemaps.cartocdn.com"];
 
 /** Origins the API engine calls from the browser. */
-export const API_ORIGINS = ["https://api.anthropic.com", "https://nominatim.openstreetmap.org"];
+export const API_ORIGINS = [
+  "https://api.anthropic.com",
+  "https://nominatim.openstreetmap.org",
+  "https://overpass-api.de",
+  "https://commons.wikimedia.org",
+  "https://api.open-meteo.com",
+  "https://graph.mapillary.com",
+];
 
 const DIRECTIVES = [
   "default-src 'self'",

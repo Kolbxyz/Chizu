@@ -1,16 +1,14 @@
 // Runs the Claude CLI in print mode, talking stream-json over stdin/stdout, and
 // translates its output into job events.
 import { execFile, spawn } from "node:child_process";
-import { fileURLToPath } from "node:url";
 import { createInterface } from "node:readline";
+import { describeBrowserCall, isBrowserTool } from "../shared/browser.ts";
 import type { JobEvent } from "../shared/job.ts";
 import { clueSchema, estimateSchema } from "../shared/schema.ts";
-import { CLAUDE_CODE_TOOLS, systemPrompt } from "../shared/prompt.ts";
+import { describeCall, isResearchTool } from "../shared/research/session.ts";
+import { MCP_PREFIX, cliInvocation, type InvocationOptions } from "./cliInvocation.ts";
 
-const REPORTER = fileURLToPath(new URL("./mcp/reporter.ts", import.meta.url));
-const RUN_TIMEOUT_MS = 20 * 60 * 1000;
-const TOOLS = ["WebSearch", "WebFetch"];
-const MCP_TOOLS = ["report_clue", "report_estimate", "zoom_image"].map((t) => `mcp__chizu__${t}`);
+const RUN_TIMEOUT_MS = 30 * 60 * 1000;
 
 type EventBody = JobEvent extends infer E ? (E extends JobEvent ? Omit<E, "t"> : never) : never;
 
@@ -21,12 +19,7 @@ export type MessageContent =
       | { type: "image"; source: { type: "base64"; media_type: "image/jpeg"; data: string } }
     >;
 
-export interface RunOptions {
-  jobDir: string;
-  imageCount: number;
-  /** Empty working directory, so no project instructions leak into the run. */
-  cwd: string;
-  resume?: string;
+export interface RunOptions extends InvocationOptions {
   onEvent: (event: EventBody) => void;
   onSession: (sessionId: string) => void;
   /** Called once; `error` is set when the run did not finish normally. */
@@ -55,37 +48,10 @@ export function claudeCodeAvailable(): Promise<boolean> {
 }
 
 export function startRun(first: MessageContent, opts: RunOptions): Run {
-  const mcpConfig = {
-    mcpServers: {
-      chizu: { command: process.execPath, args: [REPORTER, opts.jobDir, String(opts.imageCount)] },
-    },
-  };
-  const args = [
-    '-p',
-    '--input-format', 'stream-json',
-    '--output-format', 'stream-json',
-    '--verbose',
-    '--strict-mcp-config',
-    '--mcp-config', JSON.stringify(mcpConfig),
-    '--tools', TOOLS.join(','),
-    '--allowedTools', ...TOOLS, ...MCP_TOOLS,
-    '--setting-sources', 'project',
-    '--system-prompt', systemPrompt(CLAUDE_CODE_TOOLS),
-  ]; // prettier-ignore
-  if (process.env.CHIZU_MODEL) args.push("--model", process.env.CHIZU_MODEL);
-  if (opts.resume) args.push("--resume", opts.resume);
-
+  const { args, env } = cliInvocation(opts);
   const child = spawn(process.env.CHIZU_CLAUDE_BIN ?? "claude", args, {
     cwd: opts.cwd,
-    // The CLI connects MCP servers in the background by default, so the first
-    // turn could start before the reporter tools exist. Wait for them instead,
-    // with room for slow file systems (loading the MCP SDK from a Windows drive
-    // under WSL takes about 20 s).
-    env: {
-      ...process.env,
-      MCP_CONNECTION_NONBLOCKING: "0",
-      MCP_TIMEOUT: process.env.MCP_TIMEOUT ?? "120000",
-    },
+    env,
     stdio: ["pipe", "pipe", "pipe"],
   });
   let pending = 0;
@@ -212,7 +178,29 @@ export function blockToEvent(block: StreamBlock): EventBody | undefined {
       return typeof input.query === "string" ? { kind: "search", query: input.query } : undefined;
     case "WebFetch":
       return typeof input.url === "string" ? { kind: "fetch", url: input.url } : undefined;
-    default:
+    case "TaskCreate": {
+      const subject = input.subject ?? input.title ?? input.content;
+      return typeof subject === "string"
+        ? { kind: "task", detail: subject.slice(0, 140) }
+        : undefined;
+    }
+    case "Bash": {
+      const label = typeof input.description === "string" ? input.description : input.command;
+      return typeof label === "string"
+        ? { kind: "code", detail: label.split("\n")[0]?.slice(0, 140) ?? "" }
+        : undefined;
+    }
+    default: {
+      const tool = block.name?.startsWith(MCP_PREFIX) ? block.name.slice(MCP_PREFIX.length) : "";
+      if (isResearchTool(tool)) {
+        const detail = describeCall(tool, input);
+        return detail === undefined ? undefined : { kind: "tool", tool, detail };
+      }
+      if (isBrowserTool(tool)) {
+        const detail = describeBrowserCall(tool, input);
+        return detail === undefined ? undefined : { kind: "tool", tool, detail };
+      }
       return undefined;
+    }
   }
 }

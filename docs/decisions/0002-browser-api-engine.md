@@ -31,5 +31,5 @@ The shared web rules forbid storing session tokens in `localStorage` or `session
 ## Consequences
 
 - The `localStorage` exception covers only the user's own API key and only on explicit opt-in. Any script running on the page could read it; the Content Security Policy (`server/csp.ts`, also emitted as a `<meta>` tag in static builds) allows scripts from the page's own origin only.
-- `connect-src` allows `https://api.anthropic.com` and `https://nominatim.openstreetmap.org`. Both calls happen only when the user runs an API analysis.
+- `connect-src` allows `https://api.anthropic.com` and `https://nominatim.openstreetmap.org`. Both calls happen only when the user runs an API analysis. The research services added later are listed in `0003-research-tools.md`.
 - API analyses are billed to the user's API account; the panel shows an estimate computed from `src/engines/browser/pricing.ts`, which must follow price changes.

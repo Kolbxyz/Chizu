@@ -9,17 +9,18 @@ The shared rules require a one-line justification for every dependency, recorded
 
 ## Decision
 
-| Dependency                                             | Justification                                                                                                      |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| `react`, `react-dom`                                   | UI framework of the web stack.                                                                                     |
-| `leaflet`                                              | Map rendering with circles, markers and tile layers; small, dependency-free, mature.                               |
-| `sharp`                                                | Image decoding, orientation, resizing and full-resolution crops for `zoom_image`; the platform has no image codec. |
-| `exifr`                                                | EXIF and GPS parsing from image buffers; no runtime dependencies.                                                  |
-| `@modelcontextprotocol/sdk`                            | Official MCP server implementation used to expose the reporting tools to the Claude CLI.                           |
-| `zod`                                                  | Schema validation shared by the MCP tools and the server; required by the MCP SDK.                                 |
-| `@anthropic-ai/sdk`                                    | Official Anthropic client for the browser API engine (`docs/decisions/0002-browser-api-engine.md`).                |
-| `lucide-react`                                         | Icon set, tree-shaken per icon.                                                                                    |
-| `@fontsource/hanken-grotesk`, `@fontsource/newsreader` | Self-hosted fonts (no third-party font origin).                                                                    |
+| Dependency                                             | Justification                                                                                                                           |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `react`, `react-dom`                                   | UI framework of the web stack.                                                                                                          |
+| `leaflet`                                              | Map rendering with circles, markers and tile layers; small, dependency-free, mature.                                                    |
+| `sharp`                                                | Image decoding, orientation, resizing and full-resolution crops for `zoom_image`; the platform has no image codec.                      |
+| `exifr`                                                | EXIF and GPS parsing from image buffers; no runtime dependencies.                                                                       |
+| `@modelcontextprotocol/sdk`                            | Official MCP server implementation used to expose the reporting tools to the Claude CLI.                                                |
+| `zod`                                                  | Schema validation shared by the MCP tools and the server; required by the MCP SDK.                                                      |
+| `@anthropic-ai/sdk`                                    | Official Anthropic client for the browser API engine (`docs/decisions/0002-browser-api-engine.md`).                                     |
+| `lucide-react`                                         | Icon set, tree-shaken per icon.                                                                                                         |
+| `playwright-core`                                      | Drives the opt-in headless Chromium of the Claude Code engine (`docs/decisions/0004-code-and-browser.md`); no bundled browser download. |
+| `@fontsource/hanken-grotesk`, `@fontsource/newsreader` | Self-hosted fonts (no third-party font origin).                                                                                         |
 
 Map tiles are loaded from Esri World Imagery and World Boundaries and Places (satellite view) and from CARTO basemaps (street view). They are the only third-party origins allowed by the Content Security Policy (`server/csp.ts`). The satellite map is the core feature, so these requests are on by default; the page credits the providers.
 
