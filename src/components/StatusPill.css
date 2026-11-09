@@ -1,0 +1,42 @@
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.status-pill--queued,
+.status-pill--cancelled {
+  background: var(--c-raised);
+  color: var(--c-muted);
+}
+
+.status-pill--running {
+  background: var(--c-accent-soft);
+  color: var(--c-accent-text);
+}
+
+.status-pill--done {
+  background: var(--c-success-soft);
+  color: var(--c-success);
+}
+
+.status-pill--error {
+  background: var(--c-danger-soft);
+  color: var(--c-danger);
+}
+
+.status-pill__spin {
+  animation: status-spin 1s linear infinite;
+}
+
+@keyframes status-spin {
+  to {
+    rotate: 360deg;
+  }
+}
