@@ -1,15 +1,31 @@
 import { useCallback, useEffect, useState } from "react";
 import type { JobSummary } from "../../shared/job.ts";
-import { api } from "../engines/server.ts";
+import { toRef, type EngineId, type JobRef } from "../engines/types.ts";
+import { useSettings } from "../settings/context.ts";
 
 const POLL_MS = 3000;
 
-/** Job history; polls while any job is queued or running. */
+export interface ListedJob extends JobSummary {
+  engine: EngineId;
+  ref: JobRef;
+}
+
+/** History of every engine available on this host, newest first; polls while a job runs. */
 export function useJobs() {
-  const [jobs, setJobs] = useState<JobSummary[]>([]);
+  const { engines } = useSettings();
+  const [jobs, setJobs] = useState<ListedJob[]>([]);
+
   const refresh = useCallback(() => {
-    api.list().then(setJobs, () => undefined); // The next poll or action retries.
-  }, []);
+    const lists = Object.values(engines).map((engine) =>
+      engine.list().then(
+        (list) => list.map((job) => ({ ...job, engine: engine.id, ref: toRef(engine.id, job.id) })),
+        () => [] as ListedJob[], // An unreachable engine shows no history; the next poll retries.
+      ),
+    );
+    void Promise.all(lists).then((all) =>
+      setJobs(all.flat().sort((a, b) => b.createdAt - a.createdAt)),
+    );
+  }, [engines]);
 
   useEffect(refresh, [refresh]);
 

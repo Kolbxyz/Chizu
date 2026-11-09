@@ -17,6 +17,7 @@ The shared rules require a one-line justification for every dependency, recorded
 | `exifr`                                                | EXIF and GPS parsing from image buffers; no runtime dependencies.                                                  |
 | `@modelcontextprotocol/sdk`                            | Official MCP server implementation used to expose the reporting tools to the Claude CLI.                           |
 | `zod`                                                  | Schema validation shared by the MCP tools and the server; required by the MCP SDK.                                 |
+| `@anthropic-ai/sdk`                                    | Official Anthropic client for the browser API engine (`docs/decisions/0002-browser-api-engine.md`).                |
 | `lucide-react`                                         | Icon set, tree-shaken per icon.                                                                                    |
 | `@fontsource/hanken-grotesk`, `@fontsource/newsreader` | Self-hosted fonts (no third-party font origin).                                                                    |
 

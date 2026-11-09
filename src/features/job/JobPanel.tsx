@@ -3,7 +3,7 @@ import type { Job } from "../../../shared/job.ts";
 import { RichText } from "../../components/RichText.tsx";
 import { StatusPill } from "../../components/StatusPill.tsx";
 import { useI18n } from "../../i18n/context.ts";
-import { api } from "../../engines/server.ts";
+import type { Engine } from "../../engines/types.ts";
 import type { JobView } from "../../lib/derive.ts";
 import { formatCost, formatDuration } from "../../lib/format.ts";
 import { ActivityLog } from "./ActivityLog.tsx";
@@ -17,19 +17,20 @@ import "./JobPanel.css";
 
 interface Props {
   job: Job;
+  engine: Engine;
   view: JobView;
   /** Estimate index shown on the map; null follows the latest one. */
   pinned: number | null;
   onPin: (index: number | null) => void;
 }
 
-export function JobPanel({ job, view, pinned, onPin }: Props) {
+export function JobPanel({ job, engine, view, pinned, onPin }: Props) {
   const { t, locale } = useI18n();
   const shown = view.estimates[pinned ?? view.estimates.length - 1]?.estimate;
   const active = job.status === "running" || job.status === "queued";
   return (
     <div className="job-panel">
-      <PhotoStrip job={job} />
+      <PhotoStrip job={job} engine={engine} />
 
       <div className="job-panel__status">
         <StatusPill status={job.status} />
@@ -43,7 +44,11 @@ export function JobPanel({ job, view, pinned, onPin }: Props) {
           </span>
         )}
         {active && (
-          <button type="button" className="job-panel__stop" onClick={() => void api.cancel(job.id)}>
+          <button
+            type="button"
+            className="job-panel__stop"
+            onClick={() => void engine.cancel(job.id)}
+          >
             <CircleStop size={14} aria-hidden /> {t("job.stop")}
           </button>
         )}
@@ -75,7 +80,7 @@ export function JobPanel({ job, view, pinned, onPin }: Props) {
         </section>
       )}
 
-      <HintBox jobId={job.id} />
+      <HintBox jobId={job.id} engine={engine} />
       <ClueFeed clues={view.clues} />
       <ActivityLog events={view.activity} />
     </div>

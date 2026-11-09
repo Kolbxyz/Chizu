@@ -2,6 +2,7 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
+import { META_CONTENT_SECURITY_POLICY } from "./server/csp.ts";
 
 /**
  * Mounts the API inside the dev server, so `npm run dev` is a single process.
@@ -20,8 +21,25 @@ function chizuApi(): Plugin {
   };
 }
 
+/** Static hosting (GitHub Pages) sends no headers, so the build carries the CSP itself. */
+function contentSecurityPolicy(): Plugin {
+  return {
+    name: "chizu-csp",
+    apply: "build",
+    transformIndexHtml: () => [
+      {
+        tag: "meta",
+        attrs: { "http-equiv": "Content-Security-Policy", content: META_CONTENT_SECURITY_POLICY },
+        injectTo: "head-prepend",
+      },
+    ],
+  };
+}
+
 export default defineConfig({
-  plugins: [react(), chizuApi()],
+  // GitHub Pages serves the app under /<repository>/.
+  base: process.env.CHIZU_BASE ?? "/",
+  plugins: [react(), chizuApi(), contentSecurityPolicy()],
   server: {
     host: "127.0.0.1",
     port: 5173,

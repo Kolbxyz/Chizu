@@ -2,11 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { Camera, Compass, MapPin, X } from "lucide-react";
 import type { Job } from "../../../shared/job.ts";
 import { useI18n } from "../../i18n/context.ts";
-import { api } from "../../engines/server.ts";
+import { JobImage } from "../../components/JobImage.tsx";
+import type { Engine } from "../../engines/types.ts";
 import { formatCoords, formatDate } from "../../lib/format.ts";
 import "./PhotoStrip.css";
 
-export function PhotoStrip({ job }: { job: Job }) {
+export function PhotoStrip({ job, engine }: { job: Job; engine: Engine }) {
   const { t, locale } = useI18n();
   const [open, setOpen] = useState<number | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -28,7 +29,14 @@ export function PhotoStrip({ job }: { job: Job }) {
             aria-label={t("job.openPhoto", { index: i + 1 })}
             onClick={() => setOpen(i)}
           >
-            <img src={api.imageUrl(job.id, i)} alt="" width={image.width} height={image.height} />
+            <JobImage
+              engine={engine}
+              jobId={job.id}
+              index={i}
+              alt=""
+              width={image.width}
+              height={image.height}
+            />
             {image.exif.lat !== undefined && (
               <span className="photos__gps" title={t("map.exif")}>
                 <MapPin size={12} aria-hidden /> GPS
@@ -45,8 +53,10 @@ export function PhotoStrip({ job }: { job: Job }) {
       >
         {current && open !== null && (
           <figure className="lightbox__figure">
-            <img
-              src={api.imageUrl(job.id, open)}
+            <JobImage
+              engine={engine}
+              jobId={job.id}
+              index={open}
               alt={t("job.photo", { index: open + 1 })}
               width={current.width}
               height={current.height}

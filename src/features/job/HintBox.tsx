@@ -1,11 +1,11 @@
 import { useState, type FormEvent } from "react";
 import { SendHorizontal } from "lucide-react";
 import { useI18n } from "../../i18n/context.ts";
-import { api } from "../../engines/server.ts";
+import type { Engine } from "../../engines/types.ts";
 import "./HintBox.css";
 
 /** Lets the user steer the investigation; works while running and after it ends. */
-export function HintBox({ jobId }: { jobId: string }) {
+export function HintBox({ jobId, engine }: { jobId: string; engine: Engine }) {
   const { t } = useI18n();
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -17,7 +17,7 @@ export function HintBox({ jobId }: { jobId: string }) {
     if (!value) return;
     setSending(true);
     setError(undefined);
-    api
+    engine
       .hint(jobId, value)
       .then(
         () => setText(""),

@@ -11,8 +11,11 @@ const sameFile = (a: File, b: File) =>
 
 interface Props {
   busy: boolean;
-  /** `together`: every photo shows the same place and is analysed as one job. */
-  onSubmit: (files: File[], together: boolean) => void;
+  /**
+   * `together`: every photo shows the same place and is analysed as one job.
+   * Returns false when the analysis cannot start; the photos then stay in the tray.
+   */
+  onSubmit: (files: File[], together: boolean) => boolean;
 }
 
 /** Collects photos into a tray; nothing is analysed until the user starts it. */
@@ -31,8 +34,7 @@ export function Dropzone({ busy, onSubmit }: Props) {
   const dragging = useWindowFileDrop(add);
 
   const start = (together: boolean) => {
-    onSubmit(staged, together);
-    setStaged([]);
+    if (onSubmit(staged, together)) setStaged([]);
   };
 
   return (

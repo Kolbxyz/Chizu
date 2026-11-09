@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import type { Job, JobEvent } from "../../shared/job.ts";
-import { api } from "../engines/server.ts";
+import { parseRef, type JobRef } from "../engines/types.ts";
 import { applyEvent } from "../lib/derive.ts";
+import { useSettings } from "../settings/context.ts";
 
-/** Live job state over Server-Sent Events: a snapshot, then every new event. */
-export function useJobStream(id: string | undefined, onEvent?: (event: JobEvent) => void) {
-  // Keyed by id, so a stale job is never shown after the selection changes.
-  const [state, setState] = useState<{ id: string; job: Job } | undefined>();
+/** Live job state from its engine: a snapshot, then every new event. */
+export function useJobStream(ref: JobRef | undefined, onEvent?: (event: JobEvent) => void) {
+  const { engines } = useSettings();
+  // Keyed by ref, so a stale job is never shown after the selection changes.
+  const [state, setState] = useState<{ ref: JobRef; job: Job } | undefined>();
   // A ref, so a new callback identity does not reopen the stream.
   const onEventRef = useRef(onEvent);
   useEffect(() => {
@@ -14,20 +16,20 @@ export function useJobStream(id: string | undefined, onEvent?: (event: JobEvent)
   });
 
   useEffect(() => {
-    if (!id) return;
-    const source = new EventSource(api.eventsUrl(id));
-    source.addEventListener("snapshot", (message) =>
-      setState({ id, job: JSON.parse(message.data) as Job }),
+    const target = ref ? parseRef(ref) : undefined;
+    const engine = target ? engines[target.engine] : undefined;
+    if (!ref || !target || !engine) return;
+    return engine.watch(
+      target.id,
+      (job) => setState({ ref, job }),
+      (event) => {
+        setState((current) =>
+          current?.ref === ref ? { ref, job: applyEvent(current.job, event) } : current,
+        );
+        onEventRef.current?.(event);
+      },
     );
-    source.addEventListener("event", (message) => {
-      const event = JSON.parse(message.data) as JobEvent;
-      setState((current) =>
-        current?.id === id ? { id, job: applyEvent(current.job, event) } : current,
-      );
-      onEventRef.current?.(event);
-    });
-    return () => source.close();
-  }, [id]);
+  }, [ref, engines]);
 
-  return state && state.id === id ? state.job : undefined;
+  return state && state.ref === ref ? state.job : undefined;
 }

@@ -2,6 +2,7 @@
 import { createReadStream } from "node:fs";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { Readable } from "node:stream";
+import { claudeCodeAvailable } from "./claude.ts";
 import { ImageRejected } from "./images.ts";
 import type { JobStore, UploadedImage } from "./jobs.ts";
 
@@ -39,6 +40,9 @@ async function route(store: JobStore, req: IncomingMessage, res: ServerResponse,
   guard(req);
   const parts = url.pathname.split("/").filter(Boolean).slice(1); // drop "api"
   const [resource, id, action, arg] = parts;
+  if (resource === "health" && req.method === "GET") {
+    return json(res, 200, { claudeCode: await claudeCodeAvailable() });
+  }
   if (resource !== "jobs") throw new HttpError(404, "not found");
   const method = req.method ?? "GET";
 
