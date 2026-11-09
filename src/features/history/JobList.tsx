@@ -2,7 +2,7 @@ import { Trash2 } from "lucide-react";
 import type { JobSummary } from "../../../shared/job.ts";
 import { StatusPill } from "../../components/StatusPill.tsx";
 import { useI18n } from "../../i18n/context.ts";
-import { api } from "../../lib/api.ts";
+import { api } from "../../engines/server.ts";
 import { formatDate } from "../../lib/format.ts";
 import "./JobList.css";
 

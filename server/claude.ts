@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { createInterface } from "node:readline";
 import type { JobEvent } from "../shared/job.ts";
 import { clueSchema, estimateSchema } from "../shared/schema.ts";
-import { SYSTEM_PROMPT } from "./prompt.ts";
+import { SYSTEM_PROMPT } from "../shared/prompt.ts";
 
 const REPORTER = fileURLToPath(new URL("./mcp/reporter.ts", import.meta.url));
 const RUN_TIMEOUT_MS = 20 * 60 * 1000;

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Camera, Compass, MapPin, X } from "lucide-react";
 import type { Job } from "../../../shared/job.ts";
 import { useI18n } from "../../i18n/context.ts";
-import { api } from "../../lib/api.ts";
+import { api } from "../../engines/server.ts";
 import { formatCoords, formatDate } from "../../lib/format.ts";
 import "./PhotoStrip.css";
 

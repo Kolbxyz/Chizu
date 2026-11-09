@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { SendHorizontal } from "lucide-react";
 import { useI18n } from "../../i18n/context.ts";
-import { api } from "../../lib/api.ts";
+import { api } from "../../engines/server.ts";
 import "./HintBox.css";
 
 /** Lets the user steer the investigation; works while running and after it ends. */
