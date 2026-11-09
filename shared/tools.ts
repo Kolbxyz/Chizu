@@ -44,7 +44,7 @@ const FINE_LEVELS: ReadonlySet<PrecisionLevel> = new Set(["street", "exact"]);
 export function estimateReply(level: PrecisionLevel): string {
   return FINE_LEVELS.has(level)
     ? "Shown on the map. Street-level and exact coordinates must come from a lookup (Nominatim, map data, a website), not from memory. If these were not verified, verify them now and publish the corrected estimate."
-    : "Shown on the map. Keep refining and publish the next finer level.";
+    : "Shown on the map. Republish as soon as a check adds or drops a candidate, moves a confidence by 10 points or more, or tightens a radius; then publish the next finer level.";
 }
 
 /** Descriptions of the browser tools (Claude Code engine, opt-in). */
