@@ -14,8 +14,6 @@ const MAX_UPLOAD_BYTES = 200 * 1024 * 1024;
 const MAX_HINT_CHARS = 2000;
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
 const LOCALE_PATTERN = /^[a-zA-Z]{2,3}(-[a-zA-Z0-9]{2,8})*$/;
-/** Mapillary client tokens look like "MLY|<app id>|<secret>". */
-const TOKEN_PATTERN = /^[\w|-]{10,200}$/;
 
 class HttpError extends Error {
   readonly status: number;
@@ -27,6 +25,9 @@ class HttpError extends Error {
 
 /** Returns a request handler; it answers `/api/*` and passes anything else to `next`. */
 export function createApi(store: JobStore) {
+  // These checks take seconds (a CLI call, loading playwright); start them now
+  // so /api/health answers from their cached results.
+  void Promise.all([claudeCodeAvailable(), sandboxAvailable(), browserAvailable()]);
   return (req: IncomingMessage, res: ServerResponse, next: () => void) => {
     const url = new URL(req.url ?? "/", "http://localhost");
     if (!url.pathname.startsWith("/api/")) return next();
@@ -147,13 +148,10 @@ async function readUpload(
     });
   }
   const locale = String(form.get("locale") ?? "en");
-  const token = form.get("mapillaryToken");
-  if (token !== null && (typeof token !== "string" || !TOKEN_PATTERN.test(token)))
-    throw new HttpError(400, "invalid Mapillary token");
   return {
     uploads,
     locale: LOCALE_PATTERN.test(locale) ? locale : "en",
-    options: { mapillaryToken: token ?? undefined, browser: form.get("browser") === "1" },
+    options: { browser: form.get("browser") === "1" },
   };
 }
 

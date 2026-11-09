@@ -22,8 +22,6 @@ export const RESEARCH_DESCRIPTIONS = {
     "Open an image from an https URL (Wikimedia, Wikipedia, a website, a find_photos result) and look at it. Use it to compare a candidate landmark with the user's photo.",
   satellite_view:
     "Show satellite imagery (Esri World Imagery, north up) centred on a point. span_m is the width shown. Use it to match roof layouts, roads, fields, rivers and building positions against the photo.",
-  street_level:
-    "Show the nearest Mapillary street-level photos to a point, with capture date, camera heading and distance. Pass heading to prefer photos looking that way. Requires the user's Mapillary token.",
   horizon_profile:
     "Compute the skyline seen from a point using elevation data (90 m resolution): for each compass bearing, the elevation angle, distance and altitude of the highest terrain. Use it to test a viewpoint against mountains or hills visible in the photo.",
 } as const;
@@ -37,9 +35,6 @@ export const budgetNotice = (used: number, budget: number) =>
 
 export const budgetExhausted = (budget: number) =>
   `Limit reached: this tool was already called ${budget} times in this analysis. Use another tool, or conclude with the evidence you have.`;
-
-export const STREET_LEVEL_OFF =
-  "Street-level imagery is off: the user has not added a Mapillary token in Settings. Use satellite_view, find_photos or fetch_image instead.";
 
 export const CLUE_REPLY = "Clue recorded.";
 

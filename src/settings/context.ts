@@ -14,10 +14,6 @@ export interface Settings {
   apiKey: string;
   rememberKey: boolean;
   setApiKey: (key: string, remember: boolean) => void;
-  /** Mapillary client token for street-level imagery; empty when off. */
-  mapillaryToken: string;
-  rememberMapillary: boolean;
-  setMapillaryToken: (token: string, remember: boolean) => void;
   local: LocalStatus;
   /** What the local server can offer Claude Code runs. */
   capabilities: { code: boolean; browser: boolean };

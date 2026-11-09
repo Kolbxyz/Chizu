@@ -96,7 +96,6 @@ export function createBrowserEngine(config: () => ApiConfig): Engine {
         research: new ResearchSession({
           signal: run.controller.signal,
           headers: {},
-          mapillaryToken: options.get(job.id)?.mapillaryToken,
         }),
         original: async (index) => {
           const blob = await idb.get<Blob>("blobs", `${job.id}/${index}/orig`);

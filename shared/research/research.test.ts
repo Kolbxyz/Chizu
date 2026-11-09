@@ -106,11 +106,6 @@ describe("ResearchSession", () => {
     expect(over.isError).toBe(true);
   });
 
-  it("reports street level as off without a token", async () => {
-    const outcome = await new ResearchSession(ctx).call("street_level", { lat: 1, lng: 2 });
-    expect(outcome.isError).toBe(true);
-  });
-
   it("describes calls with data only", () => {
     expect(describeCall("fetch_image", { url: "https://upload.wikimedia.org/x.jpg" })).toBe(
       "upload.wikimedia.org",

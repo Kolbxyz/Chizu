@@ -4,7 +4,6 @@ import {
   CircleStop,
   FileText,
   AppWindow,
-  Footprints,
   Globe,
   Image,
   Images,
@@ -41,7 +40,6 @@ const TOOL_ICONS: Record<ResearchToolName | BrowserToolName, LucideIcon> = {
   find_photos: Images,
   fetch_image: Image,
   satellite_view: Satellite,
-  street_level: Footprints,
   horizon_profile: Mountain,
   street_view: PersonStanding,
   browser_open: AppWindow,
@@ -64,8 +62,11 @@ export function ActivityLog({ events }: { events: ActivityEvent[] }) {
         return [Globe, t("activity.fetch", { host: hostOf(event.url) })];
       case "zoom":
         return [ZoomIn, t("activity.zoom", { index: event.image })];
-      case "tool":
-        return [TOOL_ICONS[event.tool], t(`activity.tool.${event.tool}`, { detail: event.detail })];
+      case "tool": {
+        // Jobs saved by older versions may name tools that no longer exist.
+        const Icon = (TOOL_ICONS as Partial<Record<string, LucideIcon>>)[event.tool];
+        return Icon && [Icon, t(`activity.tool.${event.tool}`, { detail: event.detail })];
+      }
       case "task":
         return [ListTodo, t("activity.task", { detail: event.detail })];
       case "code":

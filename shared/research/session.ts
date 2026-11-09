@@ -8,7 +8,6 @@ import { imageTool } from "./image.ts";
 import { photosTool } from "./photos.ts";
 import { placesTool } from "./places.ts";
 import { satelliteTool } from "./satellite.ts";
-import { streetTool } from "./street.ts";
 import {
   RESEARCH_TOOL_NAMES,
   ResearchError,
@@ -25,7 +24,6 @@ export const RESEARCH_TOOLS: readonly ResearchTool[] = [
   photosTool,
   imageTool,
   satelliteTool,
-  streetTool,
   horizonTool,
 ];
 

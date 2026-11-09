@@ -3,8 +3,7 @@
 // Claude's output stream. The zoom tool crops the job's original images, and the
 // research tools (shared/research) look at maps, photos and terrain.
 // Usage: node reporter.ts <job-dir> <image-count>
-// Environment: CHIZU_MAPILLARY_TOKEN enables street-level imagery, CHIZU_WORK_DIR
-// the view_image tool (sandboxed code), CHIZU_BROWSER=1 the browser.
+// Environment: CHIZU_WORK_DIR enables the view_image tool (sandboxed code), CHIZU_BROWSER=1 the browser.
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { clueShape, estimateShape, zoomShape } from "../../shared/schema.ts";
@@ -66,7 +65,6 @@ server.registerTool(
 registerResearchTools(server, {
   signal: new AbortController().signal, // The CLI ends a run by stopping this process.
   headers: { "user-agent": USER_AGENT },
-  mapillaryToken: process.env.CHIZU_MAPILLARY_TOKEN || undefined,
 });
 
 if (process.env.CHIZU_WORK_DIR) registerViewImage(server, process.env.CHIZU_WORK_DIR);

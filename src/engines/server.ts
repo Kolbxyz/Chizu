@@ -27,7 +27,9 @@ export interface ServerHealth {
 export async function probeServer(): Promise<ServerHealth | undefined> {
   if (location.hostname.endsWith(".github.io")) return undefined;
   try {
-    const response = await fetch("/api/health", { signal: AbortSignal.timeout(2500) });
+    // Generous: right after start the server may still be checking the CLI,
+    // the sandbox and the browser. Static hosts answer at once anyway.
+    const response = await fetch("/api/health", { signal: AbortSignal.timeout(15_000) });
     if (!response.ok) return undefined;
     return (await response.json()) as ServerHealth;
   } catch {
@@ -43,7 +45,6 @@ export const serverEngine: Engine = {
     const form = new FormData();
     for (const file of files) form.append("images", file);
     form.append("locale", locale);
-    if (options.mapillaryToken) form.append("mapillaryToken", options.mapillaryToken);
     if (options.browser) form.append("browser", "1");
     return call<Job>("/jobs", { method: "POST", headers: WRITE_HEADERS, body: form });
   },

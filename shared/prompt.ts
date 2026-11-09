@@ -61,7 +61,6 @@ Looking at the world (these return images you can see):
 - ${p}find_photos: Wikimedia Commons photos near a point or matching words; the fastest way to see what a candidate town, church or landmark looks like.
 - ${p}fetch_image: open any image URL you found (Wikipedia, Commons, a website).
 - ${p}satellite_view: satellite imagery of a point, to match street layout, roofs, fields, rivers and the position of landmarks.
-- ${p}street_level: nearby street-level photos (Mapillary), when the user has enabled them.
 
 Map data and terrain:
 - ${p}geocode: exact coordinates of one named place, street or business.
@@ -79,7 +78,7 @@ ${caps.code ? codeSection(p) : ""}${caps.browser ? browserSection(p) : ""}
 3. Report clues one by one: one ${p}report_clue call per observation, never a list of observations in one call. Most photos yield five to fifteen clues.
 4. Narrow down in visible steps, even when the answer seems obvious. Publish one estimate per level the evidence supports, coarse to fine: country (or continent), then region or city, then district or street, then the exact spot. The user watches the circle shrink; skipping straight to the final answer hides the reasoning.
 5. Keep several candidates while the evidence is ambiguous, with confidences that reflect it, and drop them as the evidence rules them out. Rule a candidate out only on evidence you checked (a view, the terrain, map data), never on an impression such as how far hazy mountains look: haze and focal length make near hills look distant, so test distances with ${p}horizon_profile.
-6. Check candidates with your eyes, not with descriptions. Before giving a candidate more than 50% confidence or a level finer than city, look at it: ${p}find_photos of its landmarks, ${p}satellite_view of the area, ${p}street_level where available, ${p}horizon_profile when hills or mountains are visible${caps.browser ? `, ${p}street_view along its roads` : ""}. Compare shapes, positions and order, and record what matches or contradicts as clues. Text describing a building is weak evidence; a photo of it is strong evidence.
+6. Check candidates with your eyes, not with descriptions. Before giving a candidate more than 50% confidence or a level finer than city, look at it: ${p}find_photos of its landmarks, ${p}satellite_view of the area, ${p}horizon_profile when hills or mountains are visible${caps.browser ? `, ${p}street_view along its roads` : ""}. Compare shapes, positions and order, and record what matches or contradicts as clues. Text describing a building is weak evidence; a photo of it is strong evidence.
 7. To list candidates, prefer one ${p}find_places call over many ${p}geocode calls (for example, every church within 15 km of a hypothesis), then look at the most promising ones.
 8. Never guess coordinates from memory at street level or finer. Verify them with ${p}geocode, ${p}find_places or a website, then match the photo against what you see in ${p}satellite_view and the photos you found.
 9. For the exact level, place the point where the photographer stood, not at the centre of the subject. Use the viewing direction, perspective, visible landmarks, and ${p}horizon_profile for far skylines.${caps.code ? " Compute bearings and angles with code rather than estimating them by eye." : ""}

@@ -16,7 +16,6 @@ type Listener = (event: JobEvent) => void;
 type EventBody = Parameters<Parameters<typeof startRun>[1]["onEvent"]>[0];
 
 export interface JobOptions {
-  mapillaryToken?: string;
   /** The user allowed the browser for this analysis. */
   browser?: boolean;
 }
@@ -32,7 +31,7 @@ export class JobStore {
   private readonly runs = new Map<string, Run>();
   /** Jobs holding a run slot, including those still preparing their first message. */
   private readonly active = new Set<string>();
-  /** Per-job secrets, kept in memory only: a resume after a restart runs without them. */
+  /** Per-job switches, kept in memory only: a resume after a restart runs without them. */
   private readonly options = new Map<string, JobOptions>();
   /** Hints received while a job waits in the queue. */
   private readonly queuedHints = new Map<string, string[]>();
@@ -205,7 +204,6 @@ export class JobStore {
       code,
       browser,
       resume,
-      mapillaryToken: options.mapillaryToken,
       onEvent: (event) => this.push(job, event),
       onSession: (sessionId) => {
         job.sessionId = sessionId;

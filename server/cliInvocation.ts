@@ -18,7 +18,6 @@ export interface InvocationOptions extends Capabilities {
   cwd: string;
   dataDir: string;
   resume?: string;
-  mapillaryToken?: string;
 }
 
 export function cliInvocation(opts: InvocationOptions): { args: string[]; env: NodeJS.ProcessEnv } {
@@ -71,8 +70,7 @@ export function cliInvocation(opts: InvocationOptions): { args: string[]; env: N
     // under WSL takes about 20 s).
     MCP_CONNECTION_NONBLOCKING: "0",
     MCP_TIMEOUT: process.env.MCP_TIMEOUT ?? "120000",
-    // Secrets and switches reach the reporter through the environment, never argv.
-    CHIZU_MAPILLARY_TOKEN: opts.mapillaryToken ?? process.env.CHIZU_MAPILLARY_TOKEN ?? "",
+    // Switches reach the reporter through the environment.
     CHIZU_WORK_DIR: opts.code ? opts.cwd : "",
     CHIZU_BROWSER: opts.browser ? "1" : "",
   };

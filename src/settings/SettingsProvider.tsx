@@ -24,9 +24,9 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const savedKey = readSetting("apiKey");
   const [apiKey, setKey] = useState(savedKey ?? "");
   const [rememberKey, setRemember] = useState(savedKey !== null);
-  const savedToken = readSetting("mapillaryToken");
-  const [mapillaryToken, setToken] = useState(savedToken ?? "");
-  const [rememberMapillary, setRememberToken] = useState(savedToken !== null);
+
+  // Street-level imagery (Mapillary) was removed; drop a token remembered earlier.
+  useEffect(() => clearSetting("mapillaryToken"), []);
 
   useEffect(() => {
     let active = true;
@@ -62,14 +62,6 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     else clearSetting("apiKey");
   }, []);
 
-  const setMapillaryToken = useCallback((token: string, remember: boolean) => {
-    const trimmed = token.trim();
-    setToken(trimmed);
-    setRememberToken(remember);
-    if (remember && trimmed) writeSetting("mapillaryToken", trimmed);
-    else clearSetting("mapillaryToken");
-  }, []);
-
   const setBrowser = useCallback((allowed: boolean) => {
     setBrowserState(allowed);
     writeSetting("browser", allowed ? "1" : "0");
@@ -84,12 +76,12 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         : { cc: serverEngine, api: browserEngine };
     return {
       engine, setEngine, model, setModel, apiKey, rememberKey, setApiKey,
-      mapillaryToken, rememberMapillary, setMapillaryToken, local, engines,
+      local, engines,
       capabilities, browser, setBrowser,
     }; // prettier-ignore
   }, [
     local, chosen, setEngine, model, setModel, apiKey, rememberKey, setApiKey,
-    mapillaryToken, rememberMapillary, setMapillaryToken, capabilities, browser, setBrowser,
+    capabilities, browser, setBrowser,
   ]); // prettier-ignore
 
   return <SettingsContext.Provider value={value}>{children}</SettingsContext.Provider>;
