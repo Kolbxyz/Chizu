@@ -1,13 +1,16 @@
-.header-tools {
+.preferences {
   display: flex;
-  gap: 2px;
+  gap: 4px;
+  margin-top: auto;
+  padding: 10px 4px 0;
+  border-top: 1px solid var(--c-line);
 }
 
-.header-tools__button {
+.preferences__button {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: 38px;
+  height: 38px;
   border: 0;
   border-radius: var(--radius-full);
   background: transparent;
@@ -18,16 +21,16 @@
     transform var(--dur-s);
 }
 
-.header-tools__button:hover {
+.preferences__button:hover {
   background: var(--c-raised);
   color: var(--c-ink);
 }
 
-.header-tools__button:active {
+.preferences__button:active {
   transform: scale(0.92);
 }
 
-.header-tools__lang {
+.preferences__lang {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.04em;

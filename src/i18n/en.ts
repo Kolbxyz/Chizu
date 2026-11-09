@@ -1,6 +1,5 @@
 // Source locale. Every other locale must provide the same keys.
 export const en = {
-  "app.eyebrow": "Chizu · Photo geolocation",
   "app.title.before": "Where was ",
   "app.title.em": "this",
   "app.title.after": " taken?",

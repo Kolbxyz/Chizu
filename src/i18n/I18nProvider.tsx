@@ -3,6 +3,7 @@ import { I18nContext, type Locale, type Translate } from "./context.ts";
 import { en } from "./en.ts";
 import { fr } from "./fr.ts";
 import { readSetting, writeSetting } from "../lib/settings.ts";
+import { morphTextChanges } from "../lib/textMorph.ts";
 
 const MESSAGES = { en, fr } as const;
 
@@ -20,8 +21,10 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, [locale]);
 
   const setLocale = useCallback((next: Locale) => {
-    setLocaleState(next);
     writeSetting("locale", next);
+    const root = document.getElementById("root");
+    if (root) morphTextChanges(root, () => setLocaleState(next));
+    else setLocaleState(next);
   }, []);
 
   const t = useCallback<Translate>(

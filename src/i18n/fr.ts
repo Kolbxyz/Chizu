@@ -1,7 +1,6 @@
 import type { MessageKey } from "./en.ts";
 
 export const fr: Record<MessageKey, string> = {
-  "app.eyebrow": "Chizu · Géolocalisation de photos",
   "app.title.before": "Où a été prise cette ",
   "app.title.em": "photo",
   "app.title.after": " ?",
