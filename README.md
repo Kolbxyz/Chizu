@@ -108,7 +108,7 @@ No. There is no analytics, no crash reporting and no third-party font or script.
 The codebase follows strict engineering rules documented in [AGENTS.md](AGENTS.md):
 
 - **300 Lines Max Per File**: One concept per file, enforced in CI.
-- **Tools, Not Text**: Everything Claude reports goes through `report_clue`, `report_estimate` and `zoom_image`, validated by `shared/schema.ts`.
+- **Tools, Not Text**: Everything Claude reports goes through `report_clue`, `report_estimate` and `zoom_image` (plus `geocode` on the API engine, since the API's `web_fetch` opens only URLs already seen), validated by `shared/schema.ts`.
 - **Strict Boundaries**: The page imports only types and schemas from `shared/`, never from `server/`, and reaches the server through its engine only.
 - **No Fabricated Data**: No broad catches outside boundaries, no fallback values pretending to be results.
 
@@ -157,13 +157,18 @@ npm run build
 npm start
 ```
 
-| Variable            | Default     | Effect                               |
-| ------------------- | ----------- | ------------------------------------ |
-| `PORT`              | `8787`      | Production server port               |
-| `CHIZU_DATA`        | `./data`    | Directory holding photos and results |
-| `CHIZU_MODEL`       | CLI default | Model passed to `claude --model`     |
-| `CHIZU_CONCURRENCY` | `2`         | Analyses running at the same time    |
-| `CHIZU_CLAUDE_BIN`  | `claude`    | Path of the Claude CLI               |
+| Variable            | Default     | Effect                                |
+| ------------------- | ----------- | ------------------------------------- |
+| `PORT`              | `8787`      | Production server port                |
+| `CHIZU_DATA`        | `./data`    | Directory holding photos and results  |
+| `CHIZU_MODEL`       | CLI default | Model passed to `claude --model`      |
+| `CHIZU_CONCURRENCY` | `2`         | Analyses running at the same time     |
+| `CHIZU_CLAUDE_BIN`  | `claude`    | Path of the Claude CLI                |
+| `CHIZU_BASE`        | `/`         | Base path of the build (GitHub Pages) |
+
+### GitHub Pages
+
+`.github/workflows/pages.yml` builds and deploys the static page from `main`, under `/<repository>/`. There is no server there, so the settings offer only the API engine: each visitor enters their own Anthropic API key. Analyses, photos and the key (when remembered) stay in that visitor's browser.
 
 ---
 
