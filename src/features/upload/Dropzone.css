@@ -1,0 +1,105 @@
+.dropzone {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 16px;
+  border: 1.5px dashed var(--c-line-strong);
+  border-radius: var(--radius-l);
+  background: var(--c-surface);
+  text-align: left;
+  transition:
+    border-color var(--dur-s),
+    background var(--dur-s),
+    transform var(--dur-m) var(--ease-spring);
+}
+
+button.dropzone:hover:not(:disabled) {
+  border-color: var(--c-accent);
+  background: var(--c-accent-soft);
+  transform: scale(1.01);
+}
+
+.dropzone__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-m);
+  background: var(--c-accent);
+  color: var(--c-on-accent);
+}
+
+.dropzone__spin {
+  animation: dropzone-spin 1s linear infinite;
+}
+
+@keyframes dropzone-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+.dropzone__text {
+  display: grid;
+  gap: 1px;
+  color: var(--c-muted);
+  font-size: 13px;
+}
+
+.dropzone__text strong {
+  color: var(--c-ink);
+  font-size: 15px;
+}
+
+.dropzone__text small {
+  color: var(--c-faint);
+  font-size: 11px;
+}
+
+.dropzone--compact {
+  padding: 10px 14px;
+}
+
+.dropzone--compact .dropzone__icon {
+  width: 36px;
+  height: 36px;
+}
+
+.dropzone--compact .dropzone__text span,
+.dropzone--compact .dropzone__text small {
+  display: none;
+}
+
+.drop-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: grid;
+  place-items: center;
+  background: var(--c-scrim);
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+}
+
+.drop-overlay__card {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 48px 64px;
+  border: 2px dashed var(--c-accent);
+  border-radius: 32px;
+  background: var(--c-surface);
+  color: var(--c-accent-text);
+  font-family: var(--font-serif);
+  font-size: 26px;
+  animation: drop-in var(--dur-m) var(--ease-spring);
+}
+
+@keyframes drop-in {
+  from {
+    transform: scale(0.92);
+    opacity: 0;
+  }
+}

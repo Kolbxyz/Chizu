@@ -1,0 +1,52 @@
+.activity {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.activity__item {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 8px;
+  color: var(--c-muted);
+  font-size: 13px;
+}
+
+.activity__icon {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-full);
+  background: var(--c-raised);
+  color: var(--c-muted);
+}
+
+.activity__body {
+  min-width: 0;
+  padding-top: 3px;
+  overflow-wrap: anywhere;
+}
+
+.activity__item--thought .activity__body {
+  color: var(--c-ink-2);
+}
+
+.activity__item--hint .activity__icon {
+  background: var(--c-warn-soft);
+  color: var(--c-warn);
+}
+
+.activity__item--search .activity__icon,
+.activity__item--fetch .activity__icon {
+  background: var(--c-info-soft);
+  color: var(--c-info);
+}
+
+.activity__item--zoom .activity__icon {
+  background: var(--c-accent-soft);
+  color: var(--c-accent-text);
+}

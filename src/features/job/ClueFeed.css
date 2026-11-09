@@ -1,0 +1,65 @@
+.clues {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.clue {
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  border-left: 3px solid var(--tone, var(--c-line-strong));
+  border-radius: 4px var(--radius-m) var(--radius-m) 4px;
+  background: var(--c-raised);
+  animation: clue-in var(--dur-l) var(--ease-spring);
+}
+
+@keyframes clue-in {
+  from {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+}
+
+.clue--metadata,
+.clue--search {
+  --tone: var(--c-success);
+}
+
+.clue--text,
+.clue--landmark {
+  --tone: var(--c-accent);
+}
+
+.clue--architecture,
+.clue--infrastructure,
+.clue--vehicles {
+  --tone: var(--c-info);
+}
+
+.clue--vegetation,
+.clue--terrain,
+.clue--sun {
+  --tone: var(--c-warn);
+}
+
+.clue__category {
+  color: var(--tone, var(--c-muted));
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.clue__text {
+  color: var(--c-ink-2);
+  font-size: 14px;
+}
+
+.clue__implies {
+  color: var(--c-muted);
+  font-size: 13px;
+  font-style: italic;
+}

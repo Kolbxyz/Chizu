@@ -1,0 +1,34 @@
+.header-tools {
+  display: flex;
+  gap: 2px;
+}
+
+.header-tools__button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--c-muted);
+  transition:
+    background var(--dur-s),
+    color var(--dur-s),
+    transform var(--dur-s);
+}
+
+.header-tools__button:hover {
+  background: var(--c-raised);
+  color: var(--c-ink);
+}
+
+.header-tools__button:active {
+  transform: scale(0.92);
+}
+
+.header-tools__lang {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
