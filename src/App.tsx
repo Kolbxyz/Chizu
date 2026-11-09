@@ -3,7 +3,7 @@ import { MapPinned } from "lucide-react";
 import type { JobEvent } from "../shared/job.ts";
 import { JobList } from "./features/history/JobList.tsx";
 import { JobPanel } from "./features/job/JobPanel.tsx";
-import { HeaderTools } from "./features/shell/HeaderTools.tsx";
+import { Preferences } from "./features/shell/Preferences.tsx";
 import { GeoMap } from "./features/map/GeoMap.tsx";
 import { Dropzone } from "./features/upload/Dropzone.tsx";
 import { useSelectedJob } from "./hooks/useHashRoute.ts";
@@ -59,10 +59,6 @@ export function App() {
     <div className="app">
       <aside className="sidebar">
         <header className="topbar">
-          <div className="topbar__row">
-            <p className="topbar__eyebrow">{t("app.eyebrow")}</p>
-            <HeaderTools theme={theme} onToggleTheme={toggle} />
-          </div>
           <h1 className="topbar__title">
             {t("app.title.before")}
             <em>{t("app.title.em")}</em>
@@ -81,6 +77,7 @@ export function App() {
           onSelect={select}
           onDelete={(id) => void remove(id)}
         />
+        <Preferences theme={theme} onToggleTheme={toggle} />
       </aside>
 
       <main className="stage">

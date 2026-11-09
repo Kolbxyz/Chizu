@@ -1,21 +1,21 @@
 import { Moon, Sun } from "lucide-react";
 import { useI18n } from "../../i18n/context.ts";
-import "./HeaderTools.css";
+import "./Preferences.css";
 
 interface Props {
   theme: "light" | "dark";
   onToggleTheme: () => void;
 }
 
-/** Theme and language switches, shown on the header's eyebrow line. */
-export function HeaderTools({ theme, onToggleTheme }: Props) {
+/** Theme and language switches, at the foot of the sidebar. */
+export function Preferences({ theme, onToggleTheme }: Props) {
   const { t, locale, setLocale } = useI18n();
   const next = locale === "fr" ? "en" : "fr";
   return (
-    <div className="header-tools">
+    <div className="preferences">
       <button
         type="button"
-        className="header-tools__button"
+        className="preferences__button"
         onClick={onToggleTheme}
         aria-label={t("theme.toggle")}
         title={t("theme.toggle")}
@@ -24,7 +24,7 @@ export function HeaderTools({ theme, onToggleTheme }: Props) {
       </button>
       <button
         type="button"
-        className="header-tools__button header-tools__lang"
+        className="preferences__button preferences__lang"
         onClick={() => setLocale(next)}
         aria-label={t("lang.toggle")}
         title={t("lang.toggle")}
