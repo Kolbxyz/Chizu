@@ -24,6 +24,25 @@ describe("URL images", () => {
     expect(JSON.stringify(messages)).not.toContain('"type":"url"');
     expect(dropUrlImages(messages)).toBe(false);
   });
+
+  it("are replaced only from the given message on", () => {
+    const result = (id: string): Anthropic.Beta.BetaMessageParam => ({
+      role: "user",
+      content: [
+        {
+          type: "tool_result",
+          tool_use_id: id,
+          content: toToolContent([
+            { type: "image", url: `https://upload.wikimedia.org/${id}.jpg` },
+          ]),
+        },
+      ],
+    });
+    const messages = [result("old"), { role: "assistant", content: "…" } as const, result("new")];
+    expect(dropUrlImages(messages, 2)).toBe(true);
+    expect(JSON.stringify(messages[0])).toContain('"type":"url"');
+    expect(JSON.stringify(messages[2])).not.toContain('"type":"url"');
+  });
 });
 
 describe("stretchContrast", () => {

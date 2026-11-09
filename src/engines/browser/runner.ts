@@ -22,7 +22,11 @@ type ToolResult = Anthropic.Beta.BetaToolResultBlockParam;
 type EventBody = JobEvent extends infer E ? (E extends JobEvent ? Omit<E, "t"> : never) : never;
 
 const MAX_TURNS = 40;
-const BETAS = ["server-side-fallback-2026-07-01", "thinking-display-updates-2026-08-18"];
+const BETAS = [
+  "server-side-fallback-2026-07-01",
+  "thinking-display-updates-2026-08-18",
+  "thinking-binding-controls-2026-08-01",
+];
 
 const jsonSchema = (schema: z.ZodType) => {
   const { $schema: _ignored, ...rest } = z.toJSONSchema(schema) as Record<string, unknown>;
@@ -109,7 +113,12 @@ export async function runConversation(ctx: RunContext): Promise<void> {
 /**
  * Research images are sent as URLs that the API downloads. When one cannot be
  * fetched the API rejects the whole request; the images are then replaced by a
- * note and the turn is sent again.
+ * note and the turn is sent again: first those of the newest tool results, which
+ * no thinking block follows yet, then those of the whole conversation.
+ *
+ * Each thinking block is bound to everything sent before it, so replacing an
+ * older image invalidates the thinking that follows it; `drop_block` makes the
+ * API drop those blocks instead of rejecting the request.
  */
 async function requestTurn(ctx: RunContext) {
   const send = () =>
@@ -120,7 +129,11 @@ async function requestTurn(ctx: RunContext) {
           max_tokens: 32000,
           betas: BETAS,
           fallbacks: "default",
-          thinking: { type: "adaptive", display: "updates" },
+          thinking: {
+            type: "adaptive",
+            display: "updates",
+            block_binding: { prefix_mismatch_behavior: "drop_block" },
+          },
           output_config: { effort: "high" },
           cache_control: { type: "ephemeral" },
           system: systemPrompt(API_TOOLS),
@@ -130,12 +143,17 @@ async function requestTurn(ctx: RunContext) {
         { signal: ctx.signal },
       )
       .finalMessage();
-  try {
-    return await send();
-  } catch (err) {
-    if (!(err instanceof BadRequestError) || !dropUrlImages(ctx.messages)) throw err;
-    return send();
+  let rejected: BadRequestError | undefined;
+  for (const from of [undefined, ctx.messages.length - 1, 0]) {
+    if (from !== undefined && !dropUrlImages(ctx.messages, from)) continue;
+    try {
+      return await send();
+    } catch (err) {
+      if (!(err instanceof BadRequestError)) throw err;
+      rejected = err;
+    }
   }
+  throw rejected;
 }
 
 function appendHints(ctx: RunContext): void {
