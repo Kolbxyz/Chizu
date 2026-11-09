@@ -1,11 +1,11 @@
 // Runs the Claude CLI in print mode, talking stream-json over stdin/stdout, and
 // translates its output into job events.
-import { spawn } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { createInterface } from "node:readline";
 import type { JobEvent } from "../shared/job.ts";
 import { clueSchema, estimateSchema } from "../shared/schema.ts";
-import { SYSTEM_PROMPT } from "../shared/prompt.ts";
+import { CLAUDE_CODE_TOOLS, systemPrompt } from "../shared/prompt.ts";
 
 const REPORTER = fileURLToPath(new URL("./mcp/reporter.ts", import.meta.url));
 const RUN_TIMEOUT_MS = 20 * 60 * 1000;
@@ -39,6 +39,21 @@ export interface Run {
   cancel: () => void;
 }
 
+let availability: Promise<boolean> | undefined;
+
+/** Whether the Claude Code CLI can be started; checked once per server process. */
+export function claudeCodeAvailable(): Promise<boolean> {
+  availability ??= new Promise((resolve) => {
+    execFile(
+      process.env.CHIZU_CLAUDE_BIN ?? "claude",
+      ["--version"],
+      { timeout: 15_000 },
+      (error) => resolve(!error),
+    );
+  });
+  return availability;
+}
+
 export function startRun(first: MessageContent, opts: RunOptions): Run {
   const mcpConfig = {
     mcpServers: {
@@ -55,7 +70,7 @@ export function startRun(first: MessageContent, opts: RunOptions): Run {
     '--tools', TOOLS.join(','),
     '--allowedTools', ...TOOLS, ...MCP_TOOLS,
     '--setting-sources', 'project',
-    '--system-prompt', SYSTEM_PROMPT,
+    '--system-prompt', systemPrompt(CLAUDE_CODE_TOOLS),
   ]; // prettier-ignore
   if (process.env.CHIZU_MODEL) args.push("--model", process.env.CHIZU_MODEL);
   if (opts.resume) args.push("--resume", opts.resume);
@@ -63,8 +78,14 @@ export function startRun(first: MessageContent, opts: RunOptions): Run {
   const child = spawn(process.env.CHIZU_CLAUDE_BIN ?? "claude", args, {
     cwd: opts.cwd,
     // The CLI connects MCP servers in the background by default, so the first
-    // turn could start before the reporter tools exist. Wait for them instead.
-    env: { ...process.env, MCP_CONNECTION_NONBLOCKING: "0" },
+    // turn could start before the reporter tools exist. Wait for them instead,
+    // with room for slow file systems (loading the MCP SDK from a Windows drive
+    // under WSL takes about 20 s).
+    env: {
+      ...process.env,
+      MCP_CONNECTION_NONBLOCKING: "0",
+      MCP_TIMEOUT: process.env.MCP_TIMEOUT ?? "120000",
+    },
     stdio: ["pipe", "pipe", "pipe"],
   });
   let pending = 0;
