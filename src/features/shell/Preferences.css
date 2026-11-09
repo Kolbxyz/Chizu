@@ -35,3 +35,30 @@
   font-weight: 700;
   letter-spacing: 0.04em;
 }
+
+.preferences__settings {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  margin-right: auto;
+  padding: 0 12px;
+  height: 38px;
+  border: 1px solid var(--c-line-strong);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--c-ink-2);
+  font-size: 13px;
+  font-weight: 600;
+  transition: background var(--dur-s);
+}
+
+.preferences__settings span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preferences__settings:hover {
+  background: var(--c-raised);
+}

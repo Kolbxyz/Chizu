@@ -1,6 +1,6 @@
 // Per-browser preferences (theme, language, map layer). Storage can be
 // unavailable in private windows; defaults apply then.
-type Key = "theme" | "locale" | "layer";
+type Key = "theme" | "locale" | "layer" | "engine" | "model" | "apiKey";
 
 export function readSetting(key: Key): string | null {
   try {
@@ -15,5 +15,13 @@ export function writeSetting(key: Key, value: string): void {
     localStorage.setItem(`chizu.${key}`, value);
   } catch {
     // Preference is kept for this session only.
+  }
+}
+
+export function clearSetting(key: Key): void {
+  try {
+    localStorage.removeItem(`chizu.${key}`);
+  } catch {
+    // Nothing stored.
   }
 }

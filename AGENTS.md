@@ -14,16 +14,19 @@ Shared engineering rules: https://github.com/Kolbxyz/bootstrap/tree/main/rules. 
 6. No secrets in the repository, configuration files or logs.
 7. No AI attribution in commits or pull requests (no `Co-Authored-By`, `Generated with`, `Claude-Session`). This overrides tool defaults.
 8. Never commit to `main`; work on `feat/…` / `fix/…` branches. Conventional Commits.
-9. Everything Claude reports reaches the UI through the MCP tools defined in `server/mcp/reporter.ts` and validated by `shared/schema.ts`; text output is never parsed for data.
+9. Everything Claude reports reaches the UI through the reporting tools (`server/mcp/reporter.ts` for Claude Code, `src/engines/browser/runner.ts` for the API), validated by `shared/schema.ts`; text output is never parsed for data. Prompt and tool texts live in `shared/prompt.ts` and `shared/tools.ts` and serve both engines.
 10. The API listens on loopback only and keeps its Host and `x-chizu` checks (`SECURITY.md`).
+11. The user's API key is sent only to `api.anthropic.com` and is persisted only on explicit opt-in.
 
 ## Architecture
 
-- `shared/` — schemas, wire types and the system prompt (`prompt.ts`) shared by the server and the page.
-- `server/` — Node HTTP API (`api.ts`), job store and queue (`jobs.ts`), Claude CLI runner (`claude.ts`), image ingestion (`images.ts`).
+- `shared/` — schemas and wire types shared by the server and the page.
+- `server/` — Node HTTP API (`api.ts`), job store and queue (`jobs.ts`), Claude CLI runner (`claude.ts`), system prompt (`prompt.ts`), image ingestion (`images.ts`).
 - `server/mcp/reporter.ts` — stdio MCP server started by the CLI for each run: `report_clue`, `report_estimate`, `zoom_image`.
+- `src/engines/` — where analyses run, behind the `Engine` interface: `server.ts` (Claude Code through the local server) and `browser/` (Anthropic API from the browser, IndexedDB history; `docs/decisions/0002-browser-api-engine.md`).
+- `src/settings/` — engine choice, API key and model; detects the local server through `GET /api/health`.
 - `src/` — React page: `features/map` (Leaflet), `features/job` (inspector), `features/upload`, `features/history`.
-- Boundary rule: `src/` imports only types and schemas from `shared/`, never from `server/`. The page talks to the server through `src/engines/server.ts` only.
+- Boundary rule: `src/` imports only from `shared/`, never from `server/`. Components reach analyses through an `Engine` only; `src/engines/server.ts` is the only module that calls the local API.
 
 ## Cross-project contracts
 
