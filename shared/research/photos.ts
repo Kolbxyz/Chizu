@@ -43,6 +43,8 @@ export const photosTool = defineTool({
   description: RESEARCH_DESCRIPTIONS.find_photos,
   schema: photosSchema,
   budget: 25,
+  probe: ({ lat, lng, radius_m }) =>
+    lat !== undefined && lng !== undefined ? { lat, lng, radius_m: radius_m ?? 2000 } : undefined,
   describe: (input) =>
     [
       input.query,

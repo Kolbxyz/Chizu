@@ -2,10 +2,10 @@
 // translates its output into job events.
 import { execFile, spawn } from "node:child_process";
 import { createInterface } from "node:readline";
-import { describeBrowserCall, isBrowserTool } from "../shared/browser.ts";
+import { describeBrowserCall, isBrowserTool, probeBrowserCall } from "../shared/browser.ts";
 import type { JobEvent } from "../shared/job.ts";
 import { clueSchema, estimateSchema } from "../shared/schema.ts";
-import { describeCall, isResearchTool } from "../shared/research/session.ts";
+import { describeCall, isResearchTool, probeCall } from "../shared/research/session.ts";
 import { MCP_PREFIX, cliInvocation, type InvocationOptions } from "./cliInvocation.ts";
 
 const RUN_TIMEOUT_MS = 30 * 60 * 1000;
@@ -194,11 +194,13 @@ export function blockToEvent(block: StreamBlock): EventBody | undefined {
       const tool = block.name?.startsWith(MCP_PREFIX) ? block.name.slice(MCP_PREFIX.length) : "";
       if (isResearchTool(tool)) {
         const detail = describeCall(tool, input);
-        return detail === undefined ? undefined : { kind: "tool", tool, detail };
+        const at = probeCall(tool, input);
+        return detail === undefined ? undefined : { kind: "tool", tool, detail, ...(at && { at }) };
       }
       if (isBrowserTool(tool)) {
         const detail = describeBrowserCall(tool, input);
-        return detail === undefined ? undefined : { kind: "tool", tool, detail };
+        const at = probeBrowserCall(tool, input);
+        return detail === undefined ? undefined : { kind: "tool", tool, detail, ...(at && { at }) };
       }
       return undefined;
     }

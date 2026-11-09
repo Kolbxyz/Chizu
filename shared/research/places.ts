@@ -42,6 +42,7 @@ export const placesTool = defineTool({
   description: RESEARCH_DESCRIPTIONS.find_places,
   schema: placesSchema,
   budget: 20,
+  probe: ({ lat, lng, radius_m }) => ({ lat, lng, radius_m }),
   describe: ({ filter, lat, lng, radius_m }) =>
     `${filter} · ${Math.round(radius_m)} m around ${formatPoint(lat, lng)}`,
   async run(input, ctx) {

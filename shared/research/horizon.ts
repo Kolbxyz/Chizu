@@ -68,6 +68,8 @@ export const horizonTool = defineTool({
   description: RESEARCH_DESCRIPTIONS.horizon_profile,
   schema: horizonSchema,
   budget: 12,
+  /** The viewpoint itself: a small circle, the skyline reaches far beyond. */
+  probe: ({ lat, lng }) => ({ lat, lng, radius_m: 100 }),
   describe: ({ lat, lng, from_deg, to_deg }) =>
     `${formatPoint(lat, lng)} · ${Math.round(from_deg)}°–${Math.round(to_deg)}°`,
   async run(input, ctx) {

@@ -62,3 +62,25 @@ describe("deriveJob", () => {
     expect(view.error).toBe("timeout");
   });
 });
+
+describe("probes", () => {
+  it("collects the positions Claude checked, in order", () => {
+    const tool = (t: number, at?: { lat: number; lng: number; radius_m: number }): JobEvent => ({
+      kind: "tool",
+      tool: "satellite_view",
+      detail: "48, 7",
+      t,
+      ...(at && { at }),
+    });
+    const view = deriveJob({
+      ...base,
+      events: [
+        tool(1, { lat: 48, lng: 7, radius_m: 400 }),
+        tool(2),
+        tool(3, { lat: 49, lng: 8, radius_m: 50 }),
+      ],
+    });
+    expect(view.probes.map((p) => p.t)).toEqual([1, 3]);
+    expect(view.activity).toHaveLength(3);
+  });
+});

@@ -1,8 +1,9 @@
-// Draws location hypotheses as uncertainty circles with a centre dot, and
-// animates each one (by id) from its previous position and radius to the new one.
+// Draws location hypotheses as uncertainty circles with a centre dot, coloured
+// by confidence, and animates each one (by id) from its previous position and
+// radius to the new one.
 import L from "leaflet";
 import type { Candidate } from "../../../shared/schema.ts";
-import { MAP_COLORS } from "./colors.ts";
+import { MAP_COLORS, confidenceBand } from "./colors.ts";
 
 const TWEEN_MS = 1100;
 const FADE_MS = 400;
@@ -18,10 +19,11 @@ interface Drawn {
 const easeOutCubic = (x: number) => 1 - (1 - x) ** 3;
 const prefersReducedMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-function dotIcon(best: boolean): L.DivIcon {
+function dotIcon(candidate: Candidate, best: boolean): L.DivIcon {
   // Static markup only; Claude-provided text never goes through innerHTML.
+  const band = confidenceBand(candidate.confidence);
   return L.divIcon({
-    className: `geo-dot ${best ? "geo-dot--best" : "geo-dot--alt"}`,
+    className: `geo-dot geo-dot--${band} ${best ? "geo-dot--best" : "geo-dot--alt"}`,
     html: '<span class="geo-dot__pulse"></span><span class="geo-dot__core"></span>',
     iconSize: [22, 22],
     iconAnchor: [11, 11],
@@ -29,11 +31,12 @@ function dotIcon(best: boolean): L.DivIcon {
 }
 
 function circleStyle(candidate: Candidate, best: boolean): L.PathOptions {
+  const color = MAP_COLORS[confidenceBand(candidate.confidence)];
   return {
-    color: best ? MAP_COLORS.best : MAP_COLORS.alt,
+    color,
     weight: best ? 2.5 : 1.5,
     dashArray: best ? undefined : "6 6",
-    fillColor: best ? MAP_COLORS.best : MAP_COLORS.alt,
+    fillColor: color,
     fillOpacity: 0.06 + 0.14 * candidate.confidence,
     className: "geo-circle",
   };
@@ -78,7 +81,7 @@ export class CandidateLayer {
     });
     const label = document.createElement("span");
     const dot = L.marker(center, {
-      icon: dotIcon(best),
+      icon: dotIcon(candidate, best),
       keyboard: false,
       zIndexOffset: best ? 1000 : 0,
     });
@@ -110,7 +113,7 @@ export class CandidateLayer {
 
   private style(drawn: Drawn, candidate: Candidate, best: boolean): void {
     drawn.circle.setStyle(circleStyle(candidate, best));
-    drawn.dot.setIcon(dotIcon(best));
+    drawn.dot.setIcon(dotIcon(candidate, best));
     drawn.dot.setZIndexOffset(best ? 1000 : 0);
     drawn.label.textContent = this.format(candidate);
     const tooltip = drawn.dot.getTooltip();

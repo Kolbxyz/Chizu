@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mapPosition } from "./browser.ts";
+import { mapPosition, probeBrowserCall } from "./browser.ts";
 
 describe("mapPosition", () => {
   it("reads a Street View panorama position and heading", () => {
@@ -23,5 +23,25 @@ describe("mapPosition", () => {
 
   it("ignores other pages", () => {
     expect(mapPosition("https://example.com/maps/@1,2,3z")).toBeUndefined();
+  });
+});
+
+describe("probeBrowserCall", () => {
+  it("marks where Street View stands and where a Maps view is centred", () => {
+    expect(probeBrowserCall("street_view", { lat: 48.3, lng: 7.4 })).toEqual({
+      lat: 48.3,
+      lng: 7.4,
+      radius_m: 30,
+    });
+    expect(
+      probeBrowserCall("browser_open", {
+        url: "https://www.google.com/maps/@48.3226,7.4273,400m/data=!3m1!1e3",
+      }),
+    ).toEqual({ lat: 48.3226, lng: 7.4273, radius_m: 200 });
+  });
+
+  it("ignores pages and actions without a position", () => {
+    expect(probeBrowserCall("browser_open", { url: "https://example.com/" })).toBeUndefined();
+    expect(probeBrowserCall("browser_click", { x: 1, y: 1 })).toBeUndefined();
   });
 });

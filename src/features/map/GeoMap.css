@@ -105,12 +105,16 @@
   animation: geo-pulse 1.8s var(--ease-emphasized) infinite;
 }
 
-.geo-dot--best {
-  --dot: var(--map-best);
+.geo-dot--low {
+  --dot: var(--map-low);
 }
 
-.geo-dot--alt {
-  --dot: var(--map-alt);
+.geo-dot--mid {
+  --dot: var(--map-mid);
+}
+
+.geo-dot--high {
+  --dot: var(--map-high);
 }
 
 .geo-dot--alt .geo-dot__core {
@@ -168,4 +172,44 @@
 
 .geo-label.leaflet-tooltip-bottom::before {
   border-bottom-color: var(--c-surface);
+}
+
+/* Positions Claude checked (src/features/map/probeLayer.ts). */
+.geo-probe__core {
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: var(--map-probe);
+  border: 1.5px solid #fff;
+  box-shadow: 0 0 0 2px var(--map-halo);
+}
+
+.geo-probe__pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--map-probe);
+  opacity: 0;
+}
+
+.geo-probe--latest .geo-probe__pulse {
+  animation: geo-probe-pulse 1.6s ease-out infinite;
+}
+
+@keyframes geo-probe-pulse {
+  from {
+    transform: scale(0.6);
+    opacity: 0.55;
+  }
+  to {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .geo-probe--latest .geo-probe__pulse {
+    animation: none;
+    opacity: 0.35;
+  }
 }
