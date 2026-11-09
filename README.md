@@ -74,7 +74,7 @@ No. There is no analytics, no crash reporting and no third-party font or script.
 - **Live narrowing**: Every estimate (centre, radius, confidence) is animated on the map, with several hypotheses side by side while the evidence is ambiguous.
 - **Metadata first**: EXIF GPS position, heading, date and camera are extracted and shown; the GPS position gets its own pin with a heading cone.
 - **Visual zoom**: Claude crops the full-resolution original to read signs, plates and shopfronts, with optional contrast enhancement for haze and distant landmarks.
-- **Visual verification**: Claude looks at candidates instead of reading about them: Wikimedia Commons photos near a place, satellite imagery, Mapillary street-level photos (optional, with your own token), and any image it finds on the web.
+- **Visual verification**: Claude looks at candidates instead of reading about them: Wikimedia Commons photos near a place, satellite imagery, and any image it finds on the web.
 - **Sandboxed code** (Claude Code): Claude runs Python to measure bearings, sun position, perspective and image filters, in Claude Code's sandbox with access to the photos only.
 - **Google Maps and Street View** (Claude Code, opt-in): a browser window lets Claude stand at a candidate viewpoint in Street View and compare it with the photo.
 - **Map data and terrain**: OpenStreetMap feature searches (every church or tower around a point) and skyline profiles computed from elevation data to test a viewpoint against visible hills.

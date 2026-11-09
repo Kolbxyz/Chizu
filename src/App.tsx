@@ -67,7 +67,6 @@ export function App() {
       const groups = together ? [files] : files.map((file) => [file]);
       const created = [];
       const options = {
-        mapillaryToken: settings.mapillaryToken || undefined,
         browser: engine.id === "cc" && settings.browser,
       };
       for (const group of groups) created.push(await engine.create(group, locale, options));
@@ -88,10 +87,6 @@ export function App() {
     if (ref === selected) select(undefined);
     refresh();
   };
-  const engineLabel =
-    settings.engine === "cc"
-      ? t("settings.cc.name")
-      : `API · ${settings.model === "claude-opus-5-5" ? "Opus 5.5" : "Sonnet 5.5"}`;
 
   return (
     <div className="app">
@@ -115,12 +110,7 @@ export function App() {
           onSelect={select}
           onDelete={(id) => void remove(id)}
         />
-        <Preferences
-          theme={theme}
-          onToggleTheme={toggle}
-          engineLabel={engineLabel}
-          onOpenSettings={() => openSettings()}
-        />
+        <Preferences theme={theme} onToggleTheme={toggle} onOpenSettings={() => openSettings()} />
       </aside>
 
       <main className="stage">

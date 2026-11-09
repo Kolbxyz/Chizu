@@ -6,8 +6,6 @@ export type EngineId = "cc" | "api";
 
 /** Per-analysis settings, held in memory for the analysis and its resumes. */
 export interface AnalysisOptions {
-  /** The user's Mapillary client token; street-level imagery is off without it. */
-  mapillaryToken?: string;
   /** Allow the browser (Claude Code engine only). */
   browser?: boolean;
 }

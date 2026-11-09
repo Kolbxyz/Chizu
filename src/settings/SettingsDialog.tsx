@@ -10,7 +10,6 @@ import { SecretField } from "./SecretField.tsx";
 import "./SettingsDialog.css";
 
 const KEYS_URL = "https://console.anthropic.com/settings/keys";
-const MAPILLARY_URL = "https://www.mapillary.com/dashboard/developers";
 const LOCAL_REASON: Record<string, MessageKey> = {
   checking: "settings.cc.checking",
   "no-cli": "settings.cc.noCli",
@@ -30,8 +29,6 @@ export function SettingsDialog({ open, notice, onClose }: Props) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [key, setKey] = useState(settings.apiKey);
   const [remember, setRemember] = useState(settings.rememberKey);
-  const [token, setToken] = useState(settings.mapillaryToken);
-  const [rememberToken, setRememberToken] = useState(settings.rememberMapillary);
 
   useEffect(() => {
     if (open) dialog.current?.showModal();
@@ -40,7 +37,6 @@ export function SettingsDialog({ open, notice, onClose }: Props) {
 
   const close = () => {
     settings.setApiKey(key, remember);
-    settings.setMapillaryToken(token, rememberToken);
     onClose();
   };
   const engines: Array<{ id: EngineId; disabled: boolean; reason?: MessageKey }> = [
@@ -122,23 +118,6 @@ export function SettingsDialog({ open, notice, onClose }: Props) {
             ))}
           </select>
         </label>
-      </fieldset>
-
-      <fieldset className="settings__group">
-        <legend>{t("settings.street")}</legend>
-        <SecretField
-          label={t("settings.street.token")}
-          value={token}
-          placeholder="MLY|…"
-          onChange={setToken}
-          remember={rememberToken}
-          onRemember={setRememberToken}
-          hint={
-            <a href={MAPILLARY_URL} target="_blank" rel="noopener noreferrer">
-              {t("settings.street.getToken")}
-            </a>
-          }
-        />
       </fieldset>
 
       <footer className="settings__foot">

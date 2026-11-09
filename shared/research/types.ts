@@ -9,8 +9,6 @@ export interface ResearchContext {
   signal: AbortSignal;
   /** Added to every request: the server identifies itself; browsers set their own agent. */
   headers: Record<string, string>;
-  /** The user's Mapillary client token; street-level imagery is off without it. */
-  mapillaryToken?: string;
 }
 
 /** Expected failure (bad input, no data, unreachable service), reported to Claude as a tool error. */
@@ -22,7 +20,6 @@ export const RESEARCH_TOOL_NAMES = [
   "find_photos",
   "fetch_image",
   "satellite_view",
-  "street_level",
   "horizon_profile",
 ] as const;
 

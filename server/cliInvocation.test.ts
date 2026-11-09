@@ -30,15 +30,12 @@ describe("cliInvocation", () => {
     expect(env.CHIZU_WORK_DIR).toBe("/data/work/j1");
   });
 
-  it("keeps secrets out of the arguments", () => {
+  it("turns the browser on through the environment", () => {
     const { args, env } = cliInvocation({
       ...base,
       code: false,
       browser: true,
-      mapillaryToken: "MLY|1|secret",
     });
-    expect(args.join(" ")).not.toContain("secret");
-    expect(env.CHIZU_MAPILLARY_TOKEN).toBe("MLY|1|secret");
     expect(args).toContain("mcp__chizu__street_view");
     expect(env.CHIZU_BROWSER).toBe("1");
   });

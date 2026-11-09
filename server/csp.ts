@@ -12,7 +12,6 @@ export const API_ORIGINS = [
   "https://overpass-api.de",
   "https://commons.wikimedia.org",
   "https://api.open-meteo.com",
-  "https://graph.mapillary.com",
 ];
 
 const DIRECTIVES = [
