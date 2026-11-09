@@ -62,6 +62,9 @@ export function startRun(first: MessageContent, opts: RunOptions): Run {
 
   const child = spawn(process.env.CHIZU_CLAUDE_BIN ?? "claude", args, {
     cwd: opts.cwd,
+    // The CLI connects MCP servers in the background by default, so the first
+    // turn could start before the reporter tools exist. Wait for them instead.
+    env: { ...process.env, MCP_CONNECTION_NONBLOCKING: "0" },
     stdio: ["pipe", "pipe", "pipe"],
   });
   let pending = 0;
@@ -102,8 +105,15 @@ export function startRun(first: MessageContent, opts: RunOptions): Run {
   createInterface({ input: child.stdout }).on("line", (line) => {
     const message = parseLine(line);
     if (!message) return;
-    if (message.type === "system" && message.subtype === "init" && message.session_id) {
-      opts.onSession(message.session_id);
+    if (message.type === "system" && message.subtype === "init") {
+      const chizu = message.mcp_servers?.find((server) => server.name === "chizu");
+      if (chizu?.status !== "connected") {
+        // Without the reporter nothing can reach the UI; stop rather than let Claude guess.
+        failure = `chizu tools unavailable (${chizu?.status ?? "missing"})`;
+        child.kill("SIGTERM");
+        return;
+      }
+      if (message.session_id) opts.onSession(message.session_id);
     } else if (message.type === "assistant") {
       for (const block of message.message?.content ?? []) {
         const event = blockToEvent(block);
@@ -143,6 +153,7 @@ interface StreamMessage {
   type: string;
   subtype?: string;
   session_id?: string;
+  mcp_servers?: Array<{ name: string; status: string }>;
   message?: { content?: StreamBlock[] };
   result?: string;
   is_error?: boolean;
