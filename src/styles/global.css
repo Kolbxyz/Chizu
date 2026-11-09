@@ -73,3 +73,22 @@ a {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Language-switch animation (src/lib/textMorph.ts): the real text is hidden while
+   positioned copies of its letters move. */
+::highlight(chizu-morph) {
+  color: transparent;
+}
+
+.text-morph {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  pointer-events: none;
+}
+
+.text-morph span {
+  position: fixed;
+  white-space: pre;
+  will-change: transform, opacity;
+}
