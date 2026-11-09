@@ -15,13 +15,13 @@ export function toToolContent(parts: ResearchPart[]): ToolContent {
 }
 
 /**
- * Replaces every URL image of the conversation by a short note. The API fetches
- * them again on each request, and a stale or blocked URL fails the whole request.
- * Returns whether anything was replaced.
+ * Replaces the URL images of the messages from index `from` on by a short note.
+ * The API fetches them again on each request, and a stale or blocked URL fails
+ * the whole request. Returns whether anything was replaced.
  */
-export function dropUrlImages(messages: MessageParam[]): boolean {
+export function dropUrlImages(messages: MessageParam[], from = 0): boolean {
   let changed = false;
-  for (const message of messages) {
+  for (const message of messages.slice(from)) {
     if (!Array.isArray(message.content)) continue;
     for (const block of message.content) {
       if (block.type !== "tool_result" || !Array.isArray(block.content)) continue;
