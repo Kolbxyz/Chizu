@@ -1,0 +1,35 @@
+.timeline {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+.timeline input {
+  grid-column: 1 / -1;
+  width: 100%;
+  accent-color: var(--c-accent);
+}
+
+.timeline__label {
+  color: var(--c-muted);
+  font-size: 12px;
+}
+
+.timeline__live {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border: 1px solid var(--c-line-strong);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--c-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.timeline__live[aria-pressed="true"] {
+  border-color: var(--c-accent);
+  color: var(--c-accent-text);
+}

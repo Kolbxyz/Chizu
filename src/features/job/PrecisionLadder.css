@@ -1,0 +1,50 @@
+.ladder__head {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  color: var(--c-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ladder__head strong {
+  color: var(--c-accent-text);
+  font-family: var(--font-serif);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.ladder__steps {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ladder__step {
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--c-raised);
+  transition: background var(--dur-l) var(--ease-emphasized);
+}
+
+.ladder__step--on {
+  background: color-mix(in srgb, var(--c-accent) 55%, var(--c-raised));
+}
+
+.ladder__step--current {
+  background: var(--c-accent);
+  animation: ladder-pop var(--dur-l) var(--ease-spring);
+}
+
+@keyframes ladder-pop {
+  50% {
+    transform: scaleY(1.8);
+  }
+}

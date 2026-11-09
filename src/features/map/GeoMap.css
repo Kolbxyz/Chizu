@@ -1,0 +1,171 @@
+.geo-map {
+  position: relative;
+  height: 100%;
+  min-height: 320px;
+  overflow: hidden;
+  border-radius: var(--radius-l);
+  background: #0d0f12;
+}
+
+.geo-map__canvas {
+  position: absolute;
+  inset: 0;
+  background: #0d0f12;
+}
+
+.geo-map__layers {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 500;
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--c-surface) 88%, transparent);
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-float);
+}
+
+.geo-map__layers button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--c-muted);
+  font-size: 13px;
+  font-weight: 600;
+  transition:
+    background var(--dur-s),
+    color var(--dur-s);
+}
+
+.geo-map__layers button[aria-pressed="true"] {
+  background: var(--c-accent);
+  color: var(--c-on-accent);
+}
+
+.geo-map__attribution {
+  position: absolute;
+  left: 12px;
+  bottom: 8px;
+  z-index: 500;
+  margin: 0;
+  padding: 2px 8px;
+  border-radius: var(--radius-s);
+  background: rgb(0 0 0 / 0.45);
+  color: rgb(255 255 255 / 0.75);
+  font-size: 10px;
+}
+
+/* Leaflet controls in the app's style. */
+.geo-map .leaflet-control-zoom {
+  border: 0;
+  margin: 0 14px 14px 0;
+  border-radius: var(--radius-m);
+  overflow: hidden;
+  box-shadow: var(--shadow-float);
+}
+
+.geo-map .leaflet-control-zoom a {
+  background: var(--c-surface);
+  color: var(--c-ink);
+  border-color: var(--c-line);
+}
+
+.geo-circle {
+  transition:
+    stroke-opacity var(--dur-m),
+    fill-opacity var(--dur-m);
+}
+
+/* Hypothesis centre: a core dot with an expanding pulse. */
+.geo-dot {
+  transition: opacity var(--dur-m);
+}
+
+.geo-dot__core,
+.geo-dot__pulse {
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+}
+
+.geo-dot__core {
+  background: var(--dot);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 3px var(--map-halo);
+}
+
+.geo-dot__pulse {
+  background: var(--dot);
+  animation: geo-pulse 1.8s var(--ease-emphasized) infinite;
+}
+
+.geo-dot--best {
+  --dot: var(--map-best);
+}
+
+.geo-dot--alt {
+  --dot: var(--map-alt);
+}
+
+.geo-dot--alt .geo-dot__core {
+  inset: 7px;
+}
+
+.geo-dot--alt .geo-dot__pulse {
+  display: none;
+}
+
+@keyframes geo-pulse {
+  from {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  to {
+    transform: scale(3.2);
+    opacity: 0;
+  }
+}
+
+/* Photo GPS from metadata: green pin with a heading cone. */
+.geo-exif__core {
+  position: absolute;
+  inset: 13px;
+  border-radius: 50%;
+  background: var(--map-exif);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 3px var(--map-halo);
+}
+
+.geo-exif__cone {
+  position: absolute;
+  inset: 0;
+  background: conic-gradient(from -30deg, rgb(134 211 154 / 0.55) 0deg 60deg, transparent 60deg);
+  border-radius: 50%;
+  mask: radial-gradient(circle, transparent 6px, #000 7px);
+}
+
+.geo-label.leaflet-tooltip {
+  padding: 4px 10px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--c-surface);
+  color: var(--c-ink);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: var(--shadow-float);
+}
+
+.geo-label.leaflet-tooltip-top::before {
+  border-top-color: var(--c-surface);
+}
+
+.geo-label.leaflet-tooltip-bottom::before {
+  border-bottom-color: var(--c-surface);
+}

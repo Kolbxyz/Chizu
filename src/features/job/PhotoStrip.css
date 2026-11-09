@@ -1,0 +1,125 @@
+.photos__grid {
+  display: grid;
+  gap: 6px;
+}
+
+.photos__grid--2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.photos__grid--3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.photos__item {
+  position: relative;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-m);
+  background: var(--c-raised);
+}
+
+.photos__item img {
+  width: 100%;
+  height: auto;
+  max-height: 260px;
+  object-fit: cover;
+  transition: transform var(--dur-l) var(--ease-emphasized);
+}
+
+.photos__grid--2 .photos__item img,
+.photos__grid--3 .photos__item img {
+  aspect-ratio: 1;
+}
+
+.photos__item:hover img {
+  transform: scale(1.03);
+}
+
+.photos__gps {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: var(--c-success-soft);
+  color: var(--c-success);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.lightbox {
+  max-width: min(96vw, 1400px);
+  max-height: 94vh;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-l);
+  background: var(--c-surface);
+  color: var(--c-ink);
+  box-shadow: var(--shadow-float);
+}
+
+.lightbox::backdrop {
+  background: var(--c-scrim);
+  backdrop-filter: blur(6px);
+}
+
+.lightbox[open] {
+  animation: lightbox-in var(--dur-m) var(--ease-emphasized);
+}
+
+@keyframes lightbox-in {
+  from {
+    transform: scale(0.96);
+    opacity: 0;
+  }
+}
+
+.lightbox__figure {
+  position: relative;
+  margin: 0;
+}
+
+.lightbox__figure img {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: calc(94vh - 56px);
+}
+
+.lightbox__caption {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  padding: 14px 18px;
+  color: var(--c-muted);
+  font-size: 13px;
+}
+
+.lightbox__caption span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.lightbox__caption strong {
+  color: var(--c-ink);
+}
+
+.lightbox__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--c-scrim);
+  color: #fff;
+}

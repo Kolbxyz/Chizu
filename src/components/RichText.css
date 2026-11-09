@@ -1,0 +1,16 @@
+.rich-text p,
+.rich-text ul {
+  margin: 0 0 8px;
+}
+
+.rich-text ul {
+  padding-left: 18px;
+}
+
+.rich-text > :last-child {
+  margin-bottom: 0;
+}
+
+.rich-text strong {
+  color: var(--c-ink);
+}

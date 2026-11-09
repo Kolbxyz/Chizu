@@ -1,0 +1,71 @@
+/*
+ * Chizu design tokens: warm M3 Expressive surfaces shared with Kitsune and Yuna.
+ * Each colour is light-dark(light, dark); `color-scheme` picks the branch, from the
+ * system preference or from the data-theme override set by public/theme.js.
+ */
+:root {
+  color-scheme: light dark;
+
+  --c-bg: light-dark(#f6f2ec, #1d1c1a);
+  --c-surface: light-dark(#fffdf9, #262421);
+  --c-raised: light-dark(#f2ece4, #2e2b28);
+  --c-hover: light-dark(#ebe3d9, #36332f);
+  --c-line: light-dark(#e7e0d6, #34312d);
+  --c-line-strong: light-dark(#d6ccbf, #46423c);
+  --c-ink: light-dark(#2a2622, #f1ece4);
+  --c-ink-2: light-dark(#48423b, #d8d2c9);
+  --c-muted: light-dark(#6d665d, #a29d95);
+  --c-faint: light-dark(#8f877d, #7a746c);
+  --c-accent: light-dark(#b9532f, #e07c5d);
+  --c-accent-hover: light-dark(#a5472a, #ea9073);
+  --c-on-accent: light-dark(#fffaf6, #23140f);
+  --c-accent-soft: light-dark(#f5dfd4, #4b2d22);
+  --c-accent-text: light-dark(#a8482a, #ec9a7e);
+  --c-success: light-dark(#2c7341, #86d39a);
+  --c-success-soft: light-dark(#dcefe0, #1f3626);
+  --c-warn: light-dark(#855600, #f1c56d);
+  --c-warn-soft: light-dark(#f7ebcd, #3d3119);
+  --c-info: light-dark(#57479c, #cbbff6);
+  --c-info-soft: light-dark(#e9e4f8, #352f4b);
+  --c-danger: light-dark(#b0352a, #f19284);
+  --c-danger-soft: light-dark(#f8ddd8, #45241f);
+  --c-scrim: rgb(20 16 12 / 0.72);
+
+  /* Map overlays stay legible on satellite imagery in both themes. */
+  --map-best: #ff8a5c;
+  --map-alt: #cbbff6;
+  --map-exif: #86d39a;
+  --map-halo: rgb(20 16 12 / 0.55);
+
+  --font-sans: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "Newsreader", "Iowan Old Style", Georgia, serif;
+
+  --radius-s: 10px;
+  --radius-m: 16px;
+  --radius-l: 24px;
+  --radius-full: 999px;
+  --shadow: light-dark(0 1px 2px rgb(60 40 20 / 0.08), 0 1px 0 rgb(0 0 0 / 0.25));
+  --shadow-float: 0 12px 32px rgb(20 12 6 / 0.28);
+
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --dur-s: 150ms;
+  --dur-m: 300ms;
+  --dur-l: 500ms;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-s: 0ms;
+    --dur-m: 0ms;
+    --dur-l: 0ms;
+  }
+}
