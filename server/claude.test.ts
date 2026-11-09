@@ -73,6 +73,11 @@ describe("blockToEvent", () => {
         name: "mcp__chizu__street_view",
         input: { lat: 48.3, lng: 7.4, heading: 90 },
       }),
-    ).toEqual({ kind: "tool", tool: "street_view", detail: "48.30000, 7.40000 · 90°" });
+    ).toEqual({
+      kind: "tool",
+      tool: "street_view",
+      detail: "48.30000, 7.40000 · 90°",
+      at: { lat: 48.3, lng: 7.4, radius_m: 30 },
+    });
   });
 });

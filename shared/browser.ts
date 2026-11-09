@@ -1,6 +1,7 @@
 // Browser tools of the Claude Code engine (server/browser): names and
 // input schemas, shared with the page for the activity log.
 import { z } from "zod";
+import type { ProbedArea } from "./job.ts";
 
 export const BROWSER_TOOL_NAMES = [
   "street_view",
@@ -130,4 +131,27 @@ export function describeBrowserCall(name: BrowserToolName, input: unknown): stri
     default:
       return "";
   }
+}
+
+/** Google Maps URLs carry the view as `@lat,lng,` followed by a width (`400m`) or a zoom. */
+const MAPS_VIEW =
+  /^https:\/\/www\.google\.[a-z.]+\/maps\/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?),(?:(\d+(?:\.\d+)?)m)?/;
+const STANDING_RADIUS_M = 30;
+
+/** Area a browser call looks at, for the map: Street View and Google Maps views. */
+export function probeBrowserCall(name: BrowserToolName, input: unknown): ProbedArea | undefined {
+  const parsed = BROWSER_SCHEMAS[name].safeParse(input);
+  if (!parsed.success) return undefined;
+  const value = parsed.data as Record<string, unknown>;
+  if (name === "street_view")
+    return { lat: Number(value.lat), lng: Number(value.lng), radius_m: STANDING_RADIUS_M };
+  if (name !== "browser_open") return undefined;
+  const view = MAPS_VIEW.exec(String(value.url));
+  if (!view) return undefined;
+  const width = view[3] === undefined ? undefined : Number(view[3]);
+  return {
+    lat: Number(view[1]),
+    lng: Number(view[2]),
+    radius_m: width === undefined ? STANDING_RADIUS_M : width / 2,
+  };
 }

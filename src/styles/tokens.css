@@ -32,9 +32,12 @@
   --c-scrim: rgb(20 16 12 / 0.72);
 
   /* Map overlays stay legible on satellite imagery in both themes. */
-  --map-best: #ff8a5c;
-  --map-alt: #cbbff6;
+  /* Hypotheses by confidence: below 30%, below 60%, above (src/features/map/colors.ts). */
+  --map-low: #ff5a5a;
+  --map-mid: #ff9b42;
+  --map-high: #ffd23f;
   --map-exif: #86d39a;
+  --map-probe: #3ddc84;
   --map-halo: rgb(20 16 12 / 0.55);
 
   --font-sans: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;

@@ -5,7 +5,7 @@ import { bearings, elevationAngle, sampleDistances } from "./horizon.ts";
 import { commonsSearch, photosSchema } from "./photos.ts";
 import { overpassQuery, placesSchema } from "./places.ts";
 import { satelliteUrl } from "./satellite.ts";
-import { ResearchSession, describeCall } from "./session.ts";
+import { ResearchSession, describeCall, probeCall } from "./session.ts";
 
 const ctx = { signal: new AbortController().signal, headers: {} };
 
@@ -111,5 +111,15 @@ describe("ResearchSession", () => {
       "upload.wikimedia.org",
     );
     expect(describeCall("geocode", { query: "" })).toBeUndefined();
+  });
+
+  it("reports the area a call looks at", () => {
+    expect(probeCall("satellite_view", { lat: 48, lng: 7, span_m: 800 })).toEqual({
+      lat: 48,
+      lng: 7,
+      radius_m: 400,
+    });
+    expect(probeCall("find_photos", { query: "Kirche" })).toBeUndefined();
+    expect(probeCall("geocode", { query: "Endingen" })).toBeUndefined();
   });
 });

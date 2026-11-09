@@ -1,6 +1,7 @@
 // Research tools of one analysis: validates calls, enforces per-tool budgets and
 // answers a repeated identical call from memory instead of calling the service again.
 import { z } from "zod";
+import type { ProbedArea } from "../job.ts";
 import { REPEAT_NOTICE, budgetExhausted, budgetNotice } from "../tools.ts";
 import { geocodeTool } from "./geocode.ts";
 import { horizonTool } from "./horizon.ts";
@@ -42,6 +43,13 @@ export function describeCall(name: ResearchToolName, input: unknown): string | u
   const tool = byName.get(name);
   const parsed = tool?.schema.safeParse(input);
   return tool && parsed?.success ? tool.describe(parsed.data) : undefined;
+}
+
+/** Area a call looks at, for the map, or undefined (no point, or invalid input). */
+export function probeCall(name: ResearchToolName, input: unknown): ProbedArea | undefined {
+  const tool = byName.get(name);
+  const parsed = tool?.schema.safeParse(input);
+  return tool?.probe && parsed?.success ? tool.probe(parsed.data) : undefined;
 }
 
 export class ResearchSession {

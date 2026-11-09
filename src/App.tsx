@@ -44,6 +44,12 @@ export function App() {
   const pinnedIndex = pinned && pinned.job === selected ? pinned.index : null;
   const shownIndex = view ? (pinnedIndex ?? view.estimates.length - 1) : -1;
   const shown = view?.estimates[shownIndex]?.estimate;
+  // When replaying, show only the positions checked before the next estimate.
+  const probes = useMemo(() => {
+    const until =
+      pinnedIndex === null ? Infinity : (view?.estimates[pinnedIndex + 1]?.t ?? Infinity);
+    return view?.probes.filter((probe) => probe.t < until) ?? [];
+  }, [view, pinnedIndex]);
   const exif = useMemo(() => job?.images.map((image) => image.exif) ?? [], [job?.images]);
 
   const engine = settings.engines[settings.engine];
@@ -114,7 +120,7 @@ export function App() {
       </aside>
 
       <main className="stage">
-        <GeoMap estimate={shown} exif={exif} dark={theme === "dark"} />
+        <GeoMap estimate={shown} probes={probes} exif={exif} dark={theme === "dark"} />
       </main>
 
       <aside className="inspector" aria-live="polite">

@@ -2,6 +2,7 @@
 // return text and image URLs; each engine turns image URLs into what its
 // Claude transport accepts (base64 for Claude Code, URL sources for the API).
 import type { z } from "zod";
+import type { ProbedArea } from "../job.ts";
 
 export type ResearchPart = { type: "text"; text: string } | { type: "image"; url: string };
 
@@ -33,6 +34,8 @@ export interface ResearchTool<S extends z.ZodObject = z.ZodObject> {
   budget: number;
   /** Short, data-only summary of a call for the activity log (a query, coordinates, a host). */
   describe(input: z.infer<S>): string;
+  /** Area the call looks at, when it is aimed at a point. */
+  probe?(input: z.infer<S>): ProbedArea | undefined;
   run(input: z.infer<S>, ctx: ResearchContext): Promise<ResearchPart[]>;
 }
 

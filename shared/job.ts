@@ -17,6 +17,13 @@ export interface ExifSummary {
   software?: string;
 }
 
+/** Area a tool call looked at, drawn on the map while Claude checks a hypothesis. */
+export interface ProbedArea {
+  lat: number;
+  lng: number;
+  radius_m: number;
+}
+
 export interface JobImage {
   name: string;
   width: number;
@@ -38,7 +45,13 @@ export type JobEvent = EventBase &
     | { kind: "fetch"; url: string }
     | { kind: "zoom"; image: number }
     /** A research tool call; `detail` is data (a query, coordinates, a host). */
-    | { kind: "tool"; tool: ResearchToolName | BrowserToolName; detail: string }
+    | {
+        kind: "tool";
+        tool: ResearchToolName | BrowserToolName;
+        detail: string;
+        /** Set for calls aimed at a point (satellite, Street View, searches around a point). */
+        at?: ProbedArea;
+      }
     /** A sandboxed command; `detail` is Claude's description of it or its first line. */
     | { kind: "code"; detail: string }
     /** A step Claude added to its plan for the run. */

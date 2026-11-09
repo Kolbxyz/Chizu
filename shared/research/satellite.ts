@@ -38,6 +38,7 @@ export const satelliteTool = defineTool({
   description: RESEARCH_DESCRIPTIONS.satellite_view,
   schema: satelliteSchema,
   budget: 25,
+  probe: ({ lat, lng, span_m }) => ({ lat, lng, radius_m: span_m / 2 }),
   describe: ({ lat, lng, span_m }) => `${formatPoint(lat, lng)} · ${Math.round(span_m)} m`,
   run: async (input) => [
     text(

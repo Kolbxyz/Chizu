@@ -1,5 +1,5 @@
 // Pure projections of a job's event log into what the UI displays.
-import type { Job, JobEvent } from "../../shared/job.ts";
+import type { Job, JobEvent, ProbedArea } from "../../shared/job.ts";
 import type { Clue, Estimate } from "../../shared/schema.ts";
 
 export interface TimedEstimate {
@@ -12,10 +12,19 @@ export type ActivityEvent = Extract<
   { kind: "search" | "fetch" | "zoom" | "tool" | "code" | "task" | "thought" | "hint" | "status" }
 >;
 
+/** A position Claude checked, with the call that checked it. */
+export interface Probe {
+  at: ProbedArea;
+  tool: Extract<JobEvent, { kind: "tool" }>["tool"];
+  detail: string;
+  t: number;
+}
+
 export interface JobView {
   estimates: TimedEstimate[];
   clues: Clue[];
   activity: ActivityEvent[];
+  probes: Probe[];
   /** Claude's final text of the latest completed run. */
   answer?: string;
   error?: string;
@@ -27,6 +36,7 @@ export function deriveJob(job: Job): JobView {
     estimates: [],
     clues: [],
     activity: [],
+    probes: [],
     usage: { costUsd: 0, turns: 0, durationMs: 0 },
   };
   // The last text of a run is its conclusion, shown apart from the activity log.
@@ -56,6 +66,11 @@ export function deriveJob(job: Job): JobView {
       case "status":
         if (event.status === "running") lastThought = undefined;
         view.error = event.status === "error" ? (event.message ?? "unknown") : undefined;
+        view.activity.push(event);
+        break;
+      case "tool":
+        if (event.at)
+          view.probes.push({ at: event.at, tool: event.tool, detail: event.detail, t: event.t });
         view.activity.push(event);
         break;
       default:

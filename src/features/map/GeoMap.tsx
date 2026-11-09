@@ -6,7 +6,9 @@ import type { Candidate, Estimate } from "../../../shared/schema.ts";
 import { useI18n } from "../../i18n/context.ts";
 import { formatDistance, formatPercent } from "../../lib/format.ts";
 import { readSetting, writeSetting } from "../../lib/settings.ts";
+import type { Probe } from "../../lib/derive.ts";
 import { CandidateLayer } from "./candidateLayer.ts";
+import { ProbeLayer } from "./probeLayer.ts";
 import "./GeoMap.css";
 
 type BaseLayer = "satellite" | "streets";
@@ -23,15 +25,18 @@ const WORLD_RADIUS_M = 3_000_000;
 
 interface Props {
   estimate?: Estimate;
+  /** Positions Claude checked, oldest first. */
+  probes: Probe[];
   exif: ExifSummary[];
   dark: boolean;
 }
 
-export function GeoMap({ estimate, exif, dark }: Props) {
+export function GeoMap({ estimate, probes, exif, dark }: Props) {
   const { t, locale } = useI18n();
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const candidates = useRef<CandidateLayer | null>(null);
+  const checks = useRef<ProbeLayer | null>(null);
   const overlays = useRef<L.LayerGroup | null>(null);
   const base = useRef<L.LayerGroup | null>(null);
   const [layer, setLayer] = useState<BaseLayer>(() =>
@@ -42,6 +47,10 @@ export function GeoMap({ estimate, exif, dark }: Props) {
     formatRef.current = (c) =>
       `${c.label} · ${formatPercent(c.confidence, locale)} · ± ${formatDistance(c.radius_m, locale)}`;
   }, [locale]);
+  const probeLabel = useRef<(p: Probe) => string>(() => "");
+  useEffect(() => {
+    probeLabel.current = (p) => t(`activity.tool.${p.tool}`, { detail: p.detail });
+  }, [t]);
 
   useEffect(() => {
     if (!container.current) return;
@@ -56,10 +65,13 @@ export function GeoMap({ estimate, exif, dark }: Props) {
     L.control.zoom({ position: "bottomright" }).addTo(instance);
     base.current = L.layerGroup().addTo(instance);
     overlays.current = L.layerGroup().addTo(instance);
+    // Checks are drawn first so the hypotheses stay on top of them.
+    checks.current = new ProbeLayer(instance, (p) => probeLabel.current(p));
     candidates.current = new CandidateLayer(instance, (c) => formatRef.current(c));
     map.current = instance;
     return () => {
       candidates.current?.clear();
+      checks.current?.clear();
       instance.remove();
       map.current = null;
     };
@@ -76,6 +88,10 @@ export function GeoMap({ estimate, exif, dark }: Props) {
       group.addLayer(L.tileLayer(TILES.streets(dark), { maxZoom: 19, subdomains: "abcd" }));
     }
   }, [layer, dark]);
+
+  useEffect(() => {
+    checks.current?.update(probes);
+  }, [probes]);
 
   useEffect(() => {
     candidates.current?.update(estimate?.candidates ?? []);

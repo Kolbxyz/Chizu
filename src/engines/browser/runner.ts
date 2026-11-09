@@ -7,6 +7,7 @@ import { API_TOOLS, systemPrompt } from "../../../shared/prompt.ts";
 import {
   RESEARCH_TOOLS,
   describeCall,
+  probeCall,
   isResearchTool,
   type ResearchSession,
 } from "../../../shared/research/session.ts";
@@ -208,7 +209,9 @@ async function runTool(
     default: {
       if (!isResearchTool(block.name)) return reply(`Unknown tool ${block.name}.`, true);
       const detail = describeCall(block.name, block.input);
-      if (detail !== undefined) ctx.emit({ kind: "tool", tool: block.name, detail });
+      const at = probeCall(block.name, block.input);
+      if (detail !== undefined)
+        ctx.emit({ kind: "tool", tool: block.name, detail, ...(at && { at }) });
       const outcome = await ctx.research.call(block.name, block.input);
       return reply(toToolContent(outcome.parts), outcome.isError);
     }
