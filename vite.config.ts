@@ -44,6 +44,11 @@ export default defineConfig({
     host: "127.0.0.1",
     port: 5173,
     // Windows drives mounted in WSL (/mnt/c) emit no file-change events.
-    watch: { usePolling: process.platform === "linux" && process.cwd().startsWith("/mnt/") },
+    watch: {
+      usePolling: process.platform === "linux" && process.cwd().startsWith("/mnt/"),
+      // Jobs, photos and the Python environment are data, not source; polling
+      // their thousands of files stalls the server on /mnt drives.
+      ignored: ["**/data/**", "**/dist/**", "**/.vitest/**"],
+    },
   },
 });

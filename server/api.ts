@@ -27,6 +27,9 @@ class HttpError extends Error {
 
 /** Returns a request handler; it answers `/api/*` and passes anything else to `next`. */
 export function createApi(store: JobStore) {
+  // These checks take seconds (a CLI call, loading playwright); start them now
+  // so /api/health answers from their cached results.
+  void Promise.all([claudeCodeAvailable(), sandboxAvailable(), browserAvailable()]);
   return (req: IncomingMessage, res: ServerResponse, next: () => void) => {
     const url = new URL(req.url ?? "/", "http://localhost");
     if (!url.pathname.startsWith("/api/")) return next();
