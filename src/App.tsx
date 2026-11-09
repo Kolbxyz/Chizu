@@ -11,7 +11,7 @@ import { useJobs } from "./hooks/useJobs.ts";
 import { useTheme } from "./hooks/useTheme.ts";
 import { useJobStream } from "./hooks/useJobStream.ts";
 import { useI18n } from "./i18n/context.ts";
-import { api } from "./lib/api.ts";
+import { api } from "./engines/server.ts";
 import { deriveJob } from "./lib/derive.ts";
 import "./App.css";
 

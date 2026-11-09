@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { JobSummary } from "../../shared/job.ts";
-import { api } from "../lib/api.ts";
+import { api } from "../engines/server.ts";
 
 const POLL_MS = 3000;
 

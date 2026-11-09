@@ -3,7 +3,7 @@ import type { Job } from "../../../shared/job.ts";
 import { RichText } from "../../components/RichText.tsx";
 import { StatusPill } from "../../components/StatusPill.tsx";
 import { useI18n } from "../../i18n/context.ts";
-import { api } from "../../lib/api.ts";
+import { api } from "../../engines/server.ts";
 import type { JobView } from "../../lib/derive.ts";
 import { formatCost, formatDuration } from "../../lib/format.ts";
 import { ActivityLog } from "./ActivityLog.tsx";

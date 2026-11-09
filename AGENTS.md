@@ -19,11 +19,11 @@ Shared engineering rules: https://github.com/Kolbxyz/bootstrap/tree/main/rules. 
 
 ## Architecture
 
-- `shared/` — schemas and wire types shared by the server and the page.
-- `server/` — Node HTTP API (`api.ts`), job store and queue (`jobs.ts`), Claude CLI runner (`claude.ts`), system prompt (`prompt.ts`), image ingestion (`images.ts`).
+- `shared/` — schemas, wire types and the system prompt (`prompt.ts`) shared by the server and the page.
+- `server/` — Node HTTP API (`api.ts`), job store and queue (`jobs.ts`), Claude CLI runner (`claude.ts`), image ingestion (`images.ts`).
 - `server/mcp/reporter.ts` — stdio MCP server started by the CLI for each run: `report_clue`, `report_estimate`, `zoom_image`.
 - `src/` — React page: `features/map` (Leaflet), `features/job` (inspector), `features/upload`, `features/history`.
-- Boundary rule: `src/` imports only types and schemas from `shared/`, never from `server/`. The page talks to the server through `src/lib/api.ts` only.
+- Boundary rule: `src/` imports only types and schemas from `shared/`, never from `server/`. The page talks to the server through `src/engines/server.ts` only.
 
 ## Cross-project contracts
 
